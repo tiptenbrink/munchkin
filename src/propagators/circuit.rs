@@ -2,18 +2,26 @@ use crate::{
     basic_types::PropagationStatusCP,
     engine::propagation::{PropagationContextMut, Propagator, PropagatorInitialisationContext},
     predicates::PropositionalConjunction,
+    variables::IntegerVariable,
 };
 
-pub struct CircuitPropagator {
-    // TODO
+pub(crate) struct CircuitPropagator<Var> {
+    successor: Box<[Var]>,
+    // TODO: you can add more fields here!
 }
 
-impl Propagator for CircuitPropagator {
+impl<Var> CircuitPropagator<Var> {
+    pub(crate) fn new(successor: Box<[Var]>) -> Self {
+        Self { successor }
+    }
+}
+
+impl<Var: IntegerVariable + 'static> Propagator for CircuitPropagator<Var> {
     fn name(&self) -> &str {
         "Circuit"
     }
 
-    fn propagate(&self, context: PropagationContextMut) -> PropagationStatusCP {
+    fn propagate(&self, _context: PropagationContextMut) -> PropagationStatusCP {
         todo!()
     }
 

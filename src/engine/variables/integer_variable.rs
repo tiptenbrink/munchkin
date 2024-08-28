@@ -60,6 +60,4 @@ pub trait IntegerVariable:
 
     /// Register a watch for this variable on the given domain events.
     fn watch_all(&self, watchers: &mut Watchers<'_>, events: EnumSet<IntDomainEvent>);
-
-    fn watch_all_backtrack(&self, watchers: &mut Watchers<'_>, events: EnumSet<IntDomainEvent>);
 }

@@ -4,15 +4,24 @@ use crate::basic_types::PropositionalConjunction;
 use crate::engine::propagation::PropagationContextMut;
 use crate::engine::propagation::Propagator;
 use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::variables::IntegerVariable;
 
 /// Propagator for the constraint `\sum x_i != rhs`, where `x_i` are
 /// integer variables and `rhs` is an integer constant.
 #[derive(Debug)]
-pub(crate) struct LinearNotEqualPropagator {
-    // TODO
+pub(crate) struct LinearNotEqualPropagator<Var> {
+    terms: Box<[Var]>,
+    rhs: i32,
+    // TODO: you can add more fields here!
 }
 
-impl Propagator for LinearNotEqualPropagator {
+impl<Var> LinearNotEqualPropagator<Var> {
+    pub(crate) fn new(terms: Box<[Var]>, rhs: i32) -> Self {
+        Self { terms, rhs }
+    }
+}
+
+impl<Var: IntegerVariable + 'static> Propagator for LinearNotEqualPropagator<Var> {
     fn name(&self) -> &str {
         "LinearNe"
     }

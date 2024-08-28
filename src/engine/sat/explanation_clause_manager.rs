@@ -1,5 +1,5 @@
 use crate::basic_types::ClauseReference;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocator;
+use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::variables::Literal;
 use crate::pumpkin_assert_moderate;
 
@@ -16,7 +16,7 @@ impl ExplanationClauseManager {
     pub(crate) fn add_explanation_clause_unchecked(
         &mut self,
         explanation_literals: Vec<Literal>,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) -> ClauseReference {
         pumpkin_assert_moderate!(explanation_literals.len() >= 2);
 
@@ -26,7 +26,10 @@ impl ExplanationClauseManager {
         clause_reference
     }
 
-    pub(crate) fn clean_up_explanation_clauses(&mut self, clause_allocator: &mut ClauseAllocator) {
+    pub(crate) fn clean_up_explanation_clauses(
+        &mut self,
+        clause_allocator: &mut ClauseAllocatorType,
+    ) {
         // the idea is to delete clauses in reverse order
         //  so that in the future, when we implement manual memory management, we can simply skip
         // large blocks of memory without inspection

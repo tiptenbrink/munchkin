@@ -4,7 +4,7 @@ use crate::pumpkin_assert_simple;
 
 #[allow(clippy::len_without_is_empty)] // The clause will always have at least two literals.
 #[derive(Debug)]
-pub(crate) struct ClauseBasic {
+pub(crate) struct Clause {
     literals: Vec<Literal>,
     is_learned: bool,
     is_deleted: bool,
@@ -13,12 +13,12 @@ pub(crate) struct ClauseBasic {
     activity: f32,
 }
 
-impl ClauseBasic {
-    pub(crate) fn new(literals: Vec<Literal>, is_learned: bool) -> ClauseBasic {
+impl Clause {
+    pub(crate) fn new(literals: Vec<Literal>, is_learned: bool) -> Clause {
         pumpkin_assert_simple!(literals.len() >= 2);
 
         let num_literals = literals.len() as u32;
-        ClauseBasic {
+        Clause {
             literals,
             is_learned,
             is_deleted: false,
@@ -29,7 +29,7 @@ impl ClauseBasic {
     }
 }
 
-impl ClauseBasic {
+impl Clause {
     pub(crate) fn len(&self) -> u32 {
         self.literals.len() as u32
     }
@@ -51,20 +51,20 @@ impl ClauseBasic {
     }
 }
 
-impl std::ops::Index<u32> for ClauseBasic {
+impl std::ops::Index<u32> for Clause {
     type Output = Literal;
     fn index(&self, index: u32) -> &Literal {
         self.literals.index(index as usize)
     }
 }
 
-impl std::ops::IndexMut<u32> for ClauseBasic {
+impl std::ops::IndexMut<u32> for Clause {
     fn index_mut(&mut self, index: u32) -> &mut Literal {
         self.literals.index_mut(index as usize)
     }
 }
 
-impl std::fmt::Display for ClauseBasic {
+impl std::fmt::Display for Clause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let clause_string = &self
             .literals

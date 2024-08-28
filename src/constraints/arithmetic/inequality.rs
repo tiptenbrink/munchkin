@@ -1,5 +1,7 @@
 use crate::constraints::Constraint;
 use crate::constraints::NegatableConstraint;
+use crate::engine::conflict_analysis::ConflictResolver;
+use crate::propagators::arithmetic::linear_less_or_equal::LinearLessOrEqualPropagator;
 use crate::variables::IntegerVariable;
 use crate::ConstraintOperationError;
 use crate::Solver;
@@ -43,16 +45,20 @@ struct Inequality<Var> {
 }
 
 impl<Var: IntegerVariable + 'static> Constraint for Inequality<Var> {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
-        todo!()
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
+        LinearLessOrEqualPropagator::new(self.terms, self.rhs).post(solver)
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: crate::variables::Literal,
     ) -> Result<(), ConstraintOperationError> {
-        todo!()
+        LinearLessOrEqualPropagator::new(self.terms, self.rhs)
+            .implied_by(solver, reification_literal)
     }
 }
 

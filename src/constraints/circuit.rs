@@ -1,4 +1,4 @@
-use crate::variables::IntegerVariable;
+use crate::{propagators::circuit::CircuitPropagator, variables::IntegerVariable};
 
 use super::Constraint;
 
@@ -9,5 +9,5 @@ use super::Constraint;
 pub fn circuit<Var: IntegerVariable + 'static>(
     successor: impl Into<Box<[Var]>>,
 ) -> impl Constraint {
-    todo!()
+    CircuitPropagator::new(successor.into())
 }

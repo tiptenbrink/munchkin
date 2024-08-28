@@ -101,12 +101,12 @@ impl<'a> SelectionContext<'a> {
         num_propositional_variables: usize,
         domains: Option<Vec<(i32, i32)>>,
     ) -> (AssignmentsInteger, AssignmentsPropositional) {
-        use crate::engine::constraint_satisfaction_solver::ClauseAllocator;
+        use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
         use crate::engine::variables::Literal;
         use crate::engine::VariableLiteralMappings;
         use crate::engine::WatchListCP;
         use crate::engine::WatchListPropositional;
-        use crate::propagators::clausal::BasicClausalPropagator;
+        use crate::propagators::clausal::ClausalPropagator;
         use crate::pumpkin_assert_simple;
 
         pumpkin_assert_simple!({
@@ -118,10 +118,10 @@ impl<'a> SelectionContext<'a> {
         });
 
         let mut mediator = VariableLiteralMappings::default();
-        let mut clausal_propagator = BasicClausalPropagator::default();
+        let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
         let mut assignments_integer = AssignmentsInteger::default();
-        let mut clause_allocator = ClauseAllocator::default();
+        let mut clause_allocator = ClauseAllocatorType::default();
         let mut watch_list_propositional = WatchListPropositional::default();
         let mut watch_list_cp = WatchListCP::default();
 

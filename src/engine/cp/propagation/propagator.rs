@@ -8,7 +8,7 @@ use crate::engine::propagation::propagation_context::PropagationContextMut;
 use crate::engine::ConstraintSatisfactionSolver;
 use crate::predicates::PropositionalConjunction;
 #[cfg(doc)]
-use crate::propagators::clausal::BasicClausalPropagator;
+use crate::propagators::clausal::ClausalPropagator;
 #[cfg(doc)]
 use crate::pumpkin_asserts::PUMPKIN_ASSERT_ADVANCED;
 #[cfg(doc)]
@@ -60,9 +60,7 @@ pub trait Propagator {
     fn initialise_at_root(
         &mut self,
         _: &mut PropagatorInitialisationContext,
-    ) -> Result<(), PropositionalConjunction> {
-        Ok(())
-    }
+    ) -> Result<(), PropositionalConjunction>;
 
     /// A check whether this propagator can detect an inconsistency.
     ///

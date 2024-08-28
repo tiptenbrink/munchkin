@@ -1,4 +1,4 @@
-use super::ClauseBasic;
+use super::Clause;
 use crate::basic_types::ClauseReference;
 
 use crate::engine::variables::Literal;
@@ -7,12 +7,12 @@ use crate::pumpkin_assert_moderate;
 use crate::pumpkin_assert_simple;
 
 #[derive(Default, Debug)]
-pub(crate) struct ClauseAllocatorBasic {
-    allocated_clauses: Vec<ClauseBasic>,
+pub(crate) struct ClauseAllocator {
+    allocated_clauses: Vec<Clause>,
     deleted_clause_references: Vec<ClauseReference>,
 }
 
-impl ClauseAllocatorBasic {
+impl ClauseAllocator {
     pub(crate) fn create_clause(
         &mut self,
         literals: Vec<Literal>,
@@ -31,28 +31,25 @@ impl ClauseAllocatorBasic {
                // position
 
             self.allocated_clauses
-                .push(ClauseBasic::new(literals, is_learned));
+                .push(Clause::new(literals, is_learned));
 
             clause_reference
         } else {
             // reuse a clause reference from the deleted clause pool
             let clause_reference = self.deleted_clause_references.pop().unwrap();
             self.allocated_clauses[clause_reference.get_code() as usize - 1] =
-                ClauseBasic::new(literals, is_learned);
+                Clause::new(literals, is_learned);
 
             clause_reference
         }
     }
 
-    pub(crate) fn get_mutable_clause(
-        &mut self,
-        clause_reference: ClauseReference,
-    ) -> &mut ClauseBasic {
+    pub(crate) fn get_mutable_clause(&mut self, clause_reference: ClauseReference) -> &mut Clause {
         &mut self.allocated_clauses[clause_reference.get_code() as usize - 1]
         //-1 since clause ids go from one, and not zero
     }
 
-    pub(crate) fn get_clause(&self, clause_reference: ClauseReference) -> &ClauseBasic {
+    pub(crate) fn get_clause(&self, clause_reference: ClauseReference) -> &Clause {
         &self.allocated_clauses[clause_reference.get_code() as usize - 1]
         //-1 since clause ids go from one, and not zero
     }
@@ -80,20 +77,20 @@ impl ClauseAllocatorBasic {
     }
 }
 
-impl std::ops::Index<ClauseReference> for ClauseAllocatorBasic {
-    type Output = ClauseBasic;
-    fn index(&self, clause_reference: ClauseReference) -> &ClauseBasic {
+impl std::ops::Index<ClauseReference> for ClauseAllocator {
+    type Output = Clause;
+    fn index(&self, clause_reference: ClauseReference) -> &Clause {
         self.get_clause(clause_reference)
     }
 }
 
-impl std::ops::IndexMut<ClauseReference> for ClauseAllocatorBasic {
-    fn index_mut(&mut self, clause_reference: ClauseReference) -> &mut ClauseBasic {
+impl std::ops::IndexMut<ClauseReference> for ClauseAllocator {
+    fn index_mut(&mut self, clause_reference: ClauseReference) -> &mut Clause {
         self.get_mutable_clause(clause_reference)
     }
 }
 
-impl std::fmt::Display for ClauseAllocatorBasic {
+impl std::fmt::Display for ClauseAllocator {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let clauses_string = &self
             .allocated_clauses

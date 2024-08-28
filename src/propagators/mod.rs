@@ -6,7 +6,7 @@ pub(crate) mod all_different;
 pub(crate) mod arithmetic;
 pub(crate) mod circuit;
 pub(crate) mod clausal;
-mod cumulative;
+pub(crate) mod cumulative;
 pub(crate) mod element;
 mod reified_propagator;
 

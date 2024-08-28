@@ -43,6 +43,13 @@ impl AssignmentsPropositional {
         self.trail.len()
     }
 
+    pub fn get_last_decision(&self) -> Option<Literal> {
+        (0..self.num_trail_entries())
+            .rev()
+            .find(|index| self.is_literal_decision(self.get_trail_entry(*index)))
+            .map(|index| self.get_trail_entry(index))
+    }
+
     pub fn get_trail_entry(&self, index: usize) -> Literal {
         self.trail[index]
     }
@@ -232,7 +239,6 @@ impl AssignmentsPropositional {
         propagated_literal: Literal,
         constraint_reference: ConstraintReference,
     ) -> Option<ConflictInfo> {
-        pumpkin_assert_simple!(!constraint_reference.is_null());
         self.make_assignment(propagated_literal, constraint_reference)
     }
 

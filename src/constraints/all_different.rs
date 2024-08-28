@@ -1,5 +1,6 @@
 use super::binary_not_equals;
 use super::Constraint;
+use crate::propagators::all_different::AllDifferentPropagator;
 use crate::variables::IntegerVariable;
 
 /// Creates the [`Constraint`] that enforces that all the given `variables` are distinct using a decomposition.
@@ -25,5 +26,5 @@ pub fn all_different_decomposition<Var: IntegerVariable + 'static>(
 pub fn all_different<Var: IntegerVariable + 'static>(
     variables: impl Into<Box<[Var]>>,
 ) -> impl Constraint {
-    todo!()
+    AllDifferentPropagator::new(variables.into())
 }

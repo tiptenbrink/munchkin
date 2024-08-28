@@ -6,23 +6,22 @@ use crate::basic_types::ConstraintOperationError;
 use crate::basic_types::HashMap;
 use crate::basic_types::KeyedVec;
 
-use crate::engine::constraint_satisfaction_solver::ClauseAllocator;
+use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::variables::Literal;
 use crate::engine::AssignmentsPropositional;
-use crate::engine::ExplanationClauseManager;
 use crate::engine::Preprocessor;
 use crate::pumpkin_assert_moderate;
 use crate::pumpkin_assert_simple;
 
 #[derive(Default, Debug)]
-pub(crate) struct BasicClausalPropagator {
+pub(crate) struct ClausalPropagator {
     pub(crate) watch_lists: KeyedVec<Literal, Vec<ClauseWatcher>>,
     pub(crate) next_position_on_trail_to_propagate: usize,
     pub(crate) permanent_clauses: Vec<ClauseReference>,
     is_in_infeasible_state: bool,
 }
 
-impl BasicClausalPropagator {
+impl ClausalPropagator {
     pub(crate) fn grow(&mut self) {
         // increase the watch list, once for each polarity
         self.watch_lists.push(vec![]);
@@ -33,8 +32,6 @@ impl BasicClausalPropagator {
         &self,
         propagated_literal: Literal,
         assignments: &AssignmentsPropositional,
-        _clause_allocator: &mut ClauseAllocator,
-        _explanation_clause_manager: &mut ExplanationClauseManager,
     ) -> ClauseReference {
         pumpkin_assert_moderate!(assignments
             .get_literal_reason_constraint(propagated_literal)
@@ -52,7 +49,7 @@ impl BasicClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         assignments: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) -> Result<(), ConstraintOperationError> {
         pumpkin_assert_simple!(assignments.is_at_the_root_level());
 
@@ -102,7 +99,7 @@ impl BasicClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         assignments: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) -> Option<ClauseReference> {
         let asserting_literal = literals[0];
 
@@ -119,7 +116,7 @@ impl BasicClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         is_learned: bool,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) -> Option<ClauseReference> {
         pumpkin_assert_moderate!(literals.len() >= 2);
         pumpkin_assert_simple!(!self.is_in_infeasible_state);
@@ -137,7 +134,7 @@ impl BasicClausalPropagator {
         &mut self,
         lhs: Literal,
         rhs: Literal,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) {
         let _ = self.add_clause_unchecked(vec![!lhs, rhs], false, clause_allocator);
     }
@@ -147,7 +144,7 @@ impl BasicClausalPropagator {
         a: Literal,
         b: Literal,
         c: Literal,
-        clause_allocator: &mut ClauseAllocator,
+        clause_allocator: &mut ClauseAllocatorType,
     ) {
         let _ = self.add_clause_unchecked(vec![a, b, c], false, clause_allocator);
     }
@@ -155,7 +152,7 @@ impl BasicClausalPropagator {
     pub(crate) fn propagate(
         &mut self,
         assignments: &mut AssignmentsPropositional,
-        clause_manager: &mut ClauseAllocator,
+        clause_manager: &mut ClauseAllocatorType,
     ) -> Result<(), ConflictInfo> {
         pumpkin_assert_simple!(!self.is_in_infeasible_state);
         // this function is implemented as one long function
@@ -325,7 +322,7 @@ impl BasicClausalPropagator {
     pub(crate) fn debug_check_state(
         &self,
         assignments: &AssignmentsPropositional,
-        clause_allocator: &ClauseAllocator,
+        clause_allocator: &ClauseAllocatorType,
     ) -> bool {
         assert!(
             self.watch_lists.len() as u32 == 2 * assignments.num_propositional_variables(),
@@ -469,7 +466,7 @@ impl BasicClausalPropagator {
     }
 }
 
-impl BasicClausalPropagator {
+impl ClausalPropagator {
     fn start_watching_clause_unchecked(
         &mut self,
         clause: &[Literal],

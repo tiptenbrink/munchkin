@@ -2,6 +2,7 @@ use log::warn;
 
 use super::Constraint;
 use super::NegatableConstraint;
+use crate::engine::conflict_analysis::ConflictResolver;
 use crate::variables::Literal;
 use crate::ConstraintOperationError;
 use crate::Solver;
@@ -9,13 +10,18 @@ use crate::Solver;
 /// A structure which is responsible for adding the created [`Constraint`]s to the
 /// [`Solver`]. For an example on how to use this, see [`crate::constraints`].
 #[derive(Debug)]
-pub struct ConstraintPoster<'solver, ConstraintImpl> {
-    solver: &'solver mut Solver,
+pub struct ConstraintPoster<'solver, ConstraintImpl, ConflictResolverType> {
+    solver: &'solver mut Solver<ConflictResolverType>,
     constraint: Option<ConstraintImpl>,
 }
 
-impl<'a, ConstraintImpl> ConstraintPoster<'a, ConstraintImpl> {
-    pub(crate) fn new(solver: &'a mut Solver, constraint: ConstraintImpl) -> Self {
+impl<'a, ConstraintImpl, ConflictResolverType>
+    ConstraintPoster<'a, ConstraintImpl, ConflictResolverType>
+{
+    pub(crate) fn new(
+        solver: &'a mut Solver<ConflictResolverType>,
+        constraint: ConstraintImpl,
+    ) -> Self {
         ConstraintPoster {
             solver,
             constraint: Some(constraint),
@@ -23,7 +29,9 @@ impl<'a, ConstraintImpl> ConstraintPoster<'a, ConstraintImpl> {
     }
 }
 
-impl<ConstraintImpl: Constraint> ConstraintPoster<'_, ConstraintImpl> {
+impl<ConstraintImpl: Constraint, ConflictResolverType: ConflictResolver>
+    ConstraintPoster<'_, ConstraintImpl, ConflictResolverType>
+{
     /// Add the [`Constraint`] to the [`Solver`].
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
@@ -48,7 +56,9 @@ impl<ConstraintImpl: Constraint> ConstraintPoster<'_, ConstraintImpl> {
     }
 }
 
-impl<ConstraintImpl: NegatableConstraint> ConstraintPoster<'_, ConstraintImpl> {
+impl<ConstraintImpl: NegatableConstraint, ConflictResolverType: ConflictResolver>
+    ConstraintPoster<'_, ConstraintImpl, ConflictResolverType>
+{
     /// Add the reified version of the [`Constraint`] to the [`Solver`]; i.e. post the constraint
     /// `r <-> constraint` where `r` is a reification literal.
     ///
@@ -62,7 +72,9 @@ impl<ConstraintImpl: NegatableConstraint> ConstraintPoster<'_, ConstraintImpl> {
     }
 }
 
-impl<ConstraintImpl> Drop for ConstraintPoster<'_, ConstraintImpl> {
+impl<ConstraintImpl, ConflictResolverType> Drop
+    for ConstraintPoster<'_, ConstraintImpl, ConflictResolverType>
+{
     fn drop(&mut self) {
         if self.constraint.is_some() {
             warn!("A constraint poster is never used, this is likely a mistake.");

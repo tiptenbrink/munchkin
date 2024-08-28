@@ -8,7 +8,7 @@ use log::warn;
 use super::predicates::integer_predicate::IntegerPredicate;
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocator;
+use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::cp::AssignmentsInteger;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::propagation::PropagationContextMut;
@@ -47,7 +47,7 @@ impl DebugHelper {
         clausal_propagator: &ClausalPropagatorType,
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
-        clause_allocator: &ClauseAllocator,
+        clause_allocator: &ClauseAllocatorType,
         propagators_cp: &[Box<dyn Propagator>],
     ) -> bool {
         let mut assignments_integer_clone = assignments_integer.clone();

@@ -1,6 +1,8 @@
 use super::less_than_or_equals;
 use crate::constraints::Constraint;
 use crate::constraints::NegatableConstraint;
+use crate::engine::conflict_analysis::ConflictResolver;
+use crate::propagators::arithmetic::linear_not_equal::LinearNotEqualPropagator;
 use crate::variables::IntegerVariable;
 use crate::variables::Literal;
 use crate::ConstraintOperationError;
@@ -58,7 +60,10 @@ impl<Var> Constraint for EqualConstraint<Var>
 where
     Var: IntegerVariable + Clone + 'static,
 {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
         less_than_or_equals(self.terms.clone(), self.rhs).post(solver)?;
 
         let negated = self
@@ -71,9 +76,9 @@ where
         Ok(())
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         less_than_or_equals(self.terms.clone(), self.rhs)
@@ -113,16 +118,19 @@ impl<Var> Constraint for NotEqualConstraint<Var>
 where
     Var: IntegerVariable + Clone + 'static,
 {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
-        todo!()
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
+        LinearNotEqualPropagator::new(self.terms, self.rhs).post(solver)
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
-        todo!()
+        LinearNotEqualPropagator::new(self.terms, self.rhs).implied_by(solver, reification_literal)
     }
 }
 

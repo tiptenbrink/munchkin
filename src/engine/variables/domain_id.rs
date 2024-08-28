@@ -73,10 +73,6 @@ impl IntegerVariable for DomainId {
     fn watch_all(&self, watchers: &mut Watchers<'_>, events: EnumSet<IntDomainEvent>) {
         watchers.watch_all(*self, events);
     }
-
-    fn watch_all_backtrack(&self, watchers: &mut Watchers<'_>, events: EnumSet<IntDomainEvent>) {
-        watchers.watch_all_backtrack(*self, events);
-    }
 }
 
 impl TransformableVariable<AffineView<DomainId>> for DomainId {

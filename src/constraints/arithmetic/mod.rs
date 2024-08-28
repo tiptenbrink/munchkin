@@ -5,7 +5,7 @@ pub use equality::*;
 pub use inequality::*;
 
 use super::Constraint;
-use crate::variables::IntegerVariable;
+use crate::{propagators::arithmetic::maximum::MaximumPropagator, variables::IntegerVariable};
 
 /// Creates the [`Constraint`] `a + b = c`.
 pub fn plus<Var: IntegerVariable + 'static>(a: Var, b: Var, c: Var) -> impl Constraint {
@@ -17,7 +17,7 @@ pub fn maximum<Var: IntegerVariable + 'static>(
     array: impl Into<Box<[Var]>>,
     rhs: impl IntegerVariable + 'static,
 ) -> impl Constraint {
-    todo!()
+    MaximumPropagator::new(array.into(), rhs)
 }
 
 /// Creates the [`Constraint`] `min(array) = m`.

@@ -105,28 +105,6 @@ impl<'a> Watchers<'a> {
             }
         }
     }
-
-    pub(crate) fn watch_all_backtrack(
-        &mut self,
-        domain: DomainId,
-        events: EnumSet<IntDomainEvent>,
-    ) {
-        self.watch_list.is_watching_any_backtrack_events = true;
-        let watcher = &mut self.watch_list.watchers[domain];
-
-        for event in events {
-            let backtrack_event_watchers = match event {
-                IntDomainEvent::Assign => &mut watcher.backtrack_watcher.assign_watchers,
-                IntDomainEvent::LowerBound => &mut watcher.backtrack_watcher.lower_bound_watchers,
-                IntDomainEvent::UpperBound => &mut watcher.backtrack_watcher.upper_bound_watchers,
-                IntDomainEvent::Removal => &mut watcher.backtrack_watcher.removal_watchers,
-            };
-
-            if !backtrack_event_watchers.contains(&self.propagator_var) {
-                backtrack_event_watchers.push(self.propagator_var)
-            }
-        }
-    }
 }
 
 #[derive(Default, Debug)]

@@ -10,6 +10,6 @@
 //! The [`ClauseInterface`] trait is used to make it easier to swap different versions of the
 //! propagator in the code. As such, its usage is mainly for testing purposes.
 
-mod basic_clausal;
+mod clausal;
 
-pub(crate) use basic_clausal::BasicClausalPropagator;
+pub(crate) use clausal::ClausalPropagator;

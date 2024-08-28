@@ -1,5 +1,6 @@
 use super::Constraint;
 use super::NegatableConstraint;
+use crate::engine::conflict_analysis::ConflictResolver;
 use crate::variables::Literal;
 use crate::ConstraintOperationError;
 use crate::Solver;
@@ -21,13 +22,16 @@ pub fn conjunction(literals: impl Into<Vec<Literal>>) -> impl NegatableConstrain
 struct Clause(Vec<Literal>);
 
 impl Constraint for Clause {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
         solver.add_clause(self.0)
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         solver.add_clause(
@@ -35,15 +39,6 @@ impl Constraint for Clause {
                 .into_iter()
                 .chain(std::iter::once(!reification_literal)),
         )
-    }
-
-    #[cfg(test)]
-    fn post_test(
-        self,
-        solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn crate::engine::propagation::Propagator>, crate::basic_types::Inconsistency>
-    {
-        unimplemented!()
     }
 }
 
@@ -58,29 +53,23 @@ impl NegatableConstraint for Clause {
 struct Conjunction(Vec<Literal>);
 
 impl Constraint for Conjunction {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
         self.0
             .into_iter()
             .try_for_each(|lit| solver.add_clause([lit]))
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         self.0
             .into_iter()
             .try_for_each(|lit| solver.add_clause([!reification_literal, lit]))
-    }
-
-    #[cfg(test)]
-    fn post_test(
-        self,
-        solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn crate::engine::propagation::Propagator>, crate::basic_types::Inconsistency>
-    {
-        unimplemented!()
     }
 }
 

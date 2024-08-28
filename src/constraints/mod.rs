@@ -40,6 +40,7 @@ pub use constraint_poster::*;
 pub use cumulative::*;
 pub use element::*;
 
+use crate::engine::conflict_analysis::ConflictResolver;
 use crate::engine::propagation::Propagator;
 use crate::propagators::ReifiedPropagator;
 use crate::variables::Literal;
@@ -52,26 +53,23 @@ use crate::Solver;
 /// For example, the constraint `a = b` over two variables `a` and `b` only allows assignments to
 /// `a` and `b` of the same value, and rejects any assignment where `a` and `b` differ.
 pub trait Constraint {
-    #[cfg(test)]
-    fn post_test(
-        self,
-        solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn Propagator>, crate::basic_types::Inconsistency>;
-
     /// Add the [`Constraint`] to the [`Solver`].
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError>;
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError>;
 
     /// Add the half-reified version of the [`Constraint`] to the [`Solver`]; i.e. post the
     /// constraint `r -> constraint` where `r` is a reification literal.
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError>;
 }
@@ -80,47 +78,37 @@ impl<ConcretePropagator> Constraint for ConcretePropagator
 where
     ConcretePropagator: Propagator + 'static,
 {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
         solver.add_propagator(self)
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         solver.add_propagator(ReifiedPropagator::new(self, reification_literal))
     }
-
-    #[cfg(test)]
-    fn post_test(
-        self,
-        solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn Propagator>, crate::basic_types::Inconsistency> {
-        solver.new_propagator(self)
-    }
 }
 
 impl<C: Constraint> Constraint for Vec<C> {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+    fn post<ConflictResolverType: ConflictResolver>(
+        self,
+        solver: &mut Solver<ConflictResolverType>,
+    ) -> Result<(), ConstraintOperationError> {
         self.into_iter().try_for_each(|c| c.post(solver))
     }
 
-    fn implied_by(
+    fn implied_by<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         self.into_iter()
             .try_for_each(|c| c.implied_by(solver, reification_literal))
-    }
-
-    #[cfg(test)]
-    fn post_test(
-        self,
-        _solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn Propagator>, crate::basic_types::Inconsistency> {
-        unimplemented!()
     }
 }
 
@@ -140,9 +128,9 @@ pub trait NegatableConstraint: Constraint {
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn reify(
+    fn reify<ConflictResolverType: ConflictResolver>(
         self,
-        solver: &mut Solver,
+        solver: &mut Solver<ConflictResolverType>,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError>
     where
@@ -152,28 +140,5 @@ pub trait NegatableConstraint: Constraint {
 
         self.implied_by(solver, reification_literal)?;
         negation.implied_by(solver, !reification_literal)
-    }
-}
-
-/// This implementation is only so that we can return a `todo!` from functions which require returning an `impl Constraint`
-impl Constraint for () {
-    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
-        todo!()
-    }
-
-    fn implied_by(
-        self,
-        solver: &mut Solver,
-        reification_literal: Literal,
-    ) -> Result<(), ConstraintOperationError> {
-        todo!()
-    }
-    
-    #[cfg(test)]
-    fn post_test(
-        self,
-        solver: &mut crate::engine::test_helper::TestSolver,
-    ) -> Result<Box<dyn Propagator>, crate::basic_types::Inconsistency> {
-        todo!()
     }
 }

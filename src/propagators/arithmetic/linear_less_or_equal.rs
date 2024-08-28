@@ -3,26 +3,35 @@ use crate::basic_types::PropositionalConjunction;
 use crate::engine::propagation::PropagationContextMut;
 use crate::engine::propagation::Propagator;
 use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::variables::IntegerVariable;
 
 /// Propagator for the constraint `reif => \sum x_i <= c`.
 #[derive(Debug)]
-pub(crate) struct LinearLessOrEqualPropagator {
-    // TODO
+pub(crate) struct LinearLessOrEqualPropagator<Var> {
+    terms: Box<[Var]>,
+    rhs: i32,
+    // TODO: you can add more fields here!
 }
 
-impl Propagator for LinearLessOrEqualPropagator {
+impl<Var> LinearLessOrEqualPropagator<Var> {
+    pub(crate) fn new(terms: Box<[Var]>, rhs: i32) -> Self {
+        Self { terms, rhs }
+    }
+}
+
+impl<Var: IntegerVariable + 'static> Propagator for LinearLessOrEqualPropagator<Var> {
     fn name(&self) -> &str {
         "LinearLeq"
     }
 
     fn initialise_at_root(
         &mut self,
-        context: &mut PropagatorInitialisationContext,
+        _context: &mut PropagatorInitialisationContext,
     ) -> Result<(), PropositionalConjunction> {
         todo!()
     }
 
-    fn propagate(&self, context: PropagationContextMut) -> PropagationStatusCP {
+    fn propagate(&self, _context: PropagationContextMut) -> PropagationStatusCP {
         todo!()
     }
 }
