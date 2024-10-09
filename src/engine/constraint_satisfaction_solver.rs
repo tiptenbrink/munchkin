@@ -23,7 +23,6 @@ use crate::basic_types::ConstraintOperationError;
 use crate::basic_types::ConstraintReference;
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusOneStepCP;
-use crate::basic_types::Random;
 use crate::basic_types::SolutionReference;
 use crate::basic_types::StoredConflictInfo;
 use crate::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
@@ -45,8 +44,6 @@ use crate::engine::reason::ReasonStore;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::engine::AssignmentsInteger;
-use crate::engine::AssignmentsPropositional;
 use crate::engine::BooleanDomainEvent;
 use crate::engine::DebugHelper;
 use crate::engine::EmptyDomain;
@@ -62,6 +59,7 @@ use crate::variable_names::VariableNames;
 use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;
+use {crate::engine::AssignmentsInteger, crate::engine::AssignmentsPropositional};
 
 pub(crate) type ClausalPropagatorType = ClausalPropagator;
 pub(crate) type ClauseAllocatorType = ClauseAllocator;
@@ -117,8 +115,8 @@ pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
     pub(crate) clause_allocator: ClauseAllocatorType,
     /// Holds the assumptions when the solver is queried to solve under assumptions.
     assumptions: Vec<Literal>,
-    /// Performs conflict analysis, core extraction, and minimisation.
-    conflict_analyser: ConflictResolverType,
+    /// Resolves and processes the conflict.
+    conflict_resolver: ConflictResolverType,
     /// Tracks information related to the assignments of integer variables.
     pub(crate) assignments_integer: AssignmentsInteger,
     /// Contains information on which propagator to notify upon
@@ -273,10 +271,12 @@ impl<ConflictResolverType> ConstraintSatisfactionSolver<ConflictResolverType> {
         SolutionReference::new(&self.assignments_propositional, &self.assignments_integer)
     }
 
+    #[allow(unused)]
     pub(crate) fn is_conflicting(&self) -> bool {
         self.state.conflicting()
     }
 
+    #[allow(unused)]
     pub(crate) fn declare_ready(&mut self) {
         self.state.declare_ready()
     }
@@ -308,7 +308,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             explanation_clause_manager: ExplanationClauseManager::default(),
             true_literal: dummy_literal,
             false_literal: !dummy_literal,
-            conflict_analyser: conflict_resolver,
+            conflict_resolver,
             clausal_propagator: ClausalPropagatorType::default(),
             cp_propagators: vec![],
             counters: Counters::default(),
@@ -364,7 +364,6 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     }
 
     pub fn default_brancher_over_all_propositional_variables(&self) -> DefaultBrancher {
-        #[allow(deprecated)]
         let variables = self
             .get_propositional_assignments()
             .get_propositional_variables()
@@ -375,14 +374,6 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             value_selector: PhaseSaving::new(&variables),
             variable_type: PhantomData,
         }
-    }
-
-    pub fn get_state(&self) -> &CSPSolverState {
-        &self.state
-    }
-
-    pub fn get_random_generator(&mut self) -> &mut impl Random {
-        &mut self.internal_parameters.random_generator
     }
 
     pub fn log_statistics(&self) {
@@ -541,7 +532,6 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
         }
     }
 
-    #[deprecated = "users of the solvers should not have to access solver fields"]
     pub(crate) fn get_propositional_assignments(&self) -> &AssignmentsPropositional {
         &self.assignments_propositional
     }
@@ -849,7 +839,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             sat_trail_synced_position: &mut self.sat_trail_synced_position,
             cp_trail_synced_position: &mut self.cp_trail_synced_position,
         };
-        self.conflict_analyser
+        self.conflict_resolver
             .resolve_conflict(&mut conflict_analysis_context)
     }
 
@@ -874,7 +864,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             cp_trail_synced_position: &mut self.cp_trail_synced_position,
         };
 
-        self.conflict_analyser
+        self.conflict_resolver
             .process(&mut conflict_analysis_context)
     }
 
@@ -1067,6 +1057,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     /// through this function.
     ///
     /// The clause is marked as 'learned'.
+    #[allow(unused)]
     pub(crate) fn add_allocated_deletable_clause(
         &mut self,
         clause: Vec<Literal>,
@@ -1079,6 +1070,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     /// Delete an allocated clause. Users of this method must ensure the state of the solver stays
     /// well-defined. In particular, if there are learned clauses derived through this clause, and
     /// it is removed, those learned clauses may no-longer be valid.
+    #[allow(unused)]
     pub(crate) fn delete_allocated_clause(&mut self, reference: ClauseReference) -> Vec<Literal> {
         let clause = self.clause_allocator[reference]
             .get_literal_slice()
@@ -1206,6 +1198,7 @@ pub(crate) struct CumulativeMovingAverage {
 }
 
 impl CumulativeMovingAverage {
+    #[allow(unused)]
     pub(crate) fn add_term(&mut self, new_term: u64) {
         self.sum += new_term;
         self.num_terms += 1
@@ -1263,30 +1256,32 @@ enum CSPSolverStateInternal {
     Solving,
     ContainsSolution,
     Conflict {
+        #[allow(unused)]
         conflict_info: StoredConflictInfo,
     },
     Infeasible,
     InfeasibleUnderAssumptions {
+        #[allow(unused)]
         violated_assumption: Literal,
     },
     Timeout,
 }
 
 #[derive(Default, Debug)]
-pub struct CSPSolverState {
+pub(crate) struct CSPSolverState {
     internal_state: CSPSolverStateInternal,
 }
 
 impl CSPSolverState {
-    pub fn is_ready(&self) -> bool {
+    pub(crate) fn is_ready(&self) -> bool {
         matches!(self.internal_state, CSPSolverStateInternal::Ready)
     }
 
-    pub fn no_conflict(&self) -> bool {
+    pub(crate) fn no_conflict(&self) -> bool {
         !self.conflicting()
     }
 
-    pub fn conflicting(&self) -> bool {
+    pub(crate) fn conflicting(&self) -> bool {
         matches!(
             self.internal_state,
             CSPSolverStateInternal::Conflict { conflict_info: _ }
@@ -1294,17 +1289,17 @@ impl CSPSolverState {
         // self.is_clausal_conflict() || self.is_cp_conflict()
     }
 
-    pub fn is_infeasible(&self) -> bool {
+    pub(crate) fn is_infeasible(&self) -> bool {
         matches!(self.internal_state, CSPSolverStateInternal::Infeasible)
     }
 
     /// Determines whether the current state is inconsistent; i.e. whether it is conflicting,
     /// infeasible or infeasible under assumptions
-    pub fn is_inconsistent(&self) -> bool {
+    pub(crate) fn is_inconsistent(&self) -> bool {
         self.conflicting() || self.is_infeasible() || self.is_infeasible_under_assumptions()
     }
 
-    pub fn is_infeasible_under_assumptions(&self) -> bool {
+    pub(crate) fn is_infeasible_under_assumptions(&self) -> bool {
         matches!(
             self.internal_state,
             CSPSolverStateInternal::InfeasibleUnderAssumptions {
@@ -1313,7 +1308,8 @@ impl CSPSolverState {
         )
     }
 
-    pub fn get_violated_assumption(&self) -> Literal {
+    #[allow(unused)]
+    pub(crate) fn get_violated_assumption(&self) -> Literal {
         if let CSPSolverStateInternal::InfeasibleUnderAssumptions {
             violated_assumption,
         } = self.internal_state
@@ -1327,7 +1323,8 @@ impl CSPSolverState {
         }
     }
 
-    pub fn get_conflict_info(&self) -> &StoredConflictInfo {
+    #[allow(unused)]
+    pub(crate) fn get_conflict_info(&self) -> &StoredConflictInfo {
         if let CSPSolverStateInternal::Conflict { conflict_info } = &self.internal_state {
             conflict_info
         } else {
@@ -1335,11 +1332,13 @@ impl CSPSolverState {
         }
     }
 
-    pub fn timeout(&self) -> bool {
+    #[allow(unused)]
+    pub(crate) fn timeout(&self) -> bool {
         matches!(self.internal_state, CSPSolverStateInternal::Timeout)
     }
 
-    pub fn has_solution(&self) -> bool {
+    #[allow(unused)]
+    pub(crate) fn has_solution(&self) -> bool {
         matches!(
             self.internal_state,
             CSPSolverStateInternal::ContainsSolution
@@ -1350,7 +1349,7 @@ impl CSPSolverState {
         self.internal_state = CSPSolverStateInternal::Ready;
     }
 
-    pub fn declare_solving(&mut self) {
+    pub(crate) fn declare_solving(&mut self) {
         pumpkin_assert_simple!((self.is_ready() || self.conflicting()) && !self.is_infeasible());
         self.internal_state = CSPSolverStateInternal::Solving;
     }

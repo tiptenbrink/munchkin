@@ -1,9 +1,9 @@
-use crate::{
-    basic_types::PropagationStatusCP,
-    engine::propagation::{PropagationContextMut, Propagator, PropagatorInitialisationContext},
-    predicates::PropositionalConjunction,
-    variables::IntegerVariable,
-};
+use crate::basic_types::PropagationStatusCP;
+use crate::engine::propagation::PropagationContextMut;
+use crate::engine::propagation::Propagator;
+use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::predicates::PropositionalConjunction;
+use crate::variables::IntegerVariable;
 
 pub(crate) struct AllDifferentPropagator<Var> {
     variables: Box<[Var]>, // TODO: you can add more fields here!
@@ -29,5 +29,21 @@ impl<Var: IntegerVariable + 'static> Propagator for AllDifferentPropagator<Var> 
         _context: &mut PropagatorInitialisationContext,
     ) -> Result<(), PropositionalConjunction> {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::engine::test_helper::TestSolver;
+
+    #[test]
+    fn test_simple_propagation() {
+        let mut solver = TestSolver::default();
+
+        let x = solver.new_variable(5, 5);
+        let y = solver.new_variable(6, 6);
+        let y = solver.new_variable(5, 7);
+
+        // let _ = solver.new_propagator();
     }
 }

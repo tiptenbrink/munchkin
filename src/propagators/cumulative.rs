@@ -45,3 +45,53 @@ impl<Var: IntegerVariable + 'static> Propagator for CumulativePropagator<Var> {
         todo!()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::engine::test_helper::TestSolver;
+
+    use super::CumulativePropagator;
+
+    #[test]
+    fn test_simple_propagation() {
+        let mut solver = TestSolver::default();
+
+        let start_time_1 = solver.new_variable(5, 5);
+        let start_time_2 = solver.new_variable(6, 9);
+
+        let durations = [3, 2];
+        let resource_requirements = [1, 1];
+        let resource_capacity = 1;
+
+        let _ = solver
+            .new_propagator(CumulativePropagator::new(
+                [start_time_1, start_time_2].into(),
+                &durations,
+                &resource_requirements,
+                resource_capacity,
+            ))
+            .expect("Expected no conflict here");
+        solver.assert_bounds(start_time_2, 8, 9);
+    }
+
+    #[test]
+    fn test_simple_conflict() {
+        let mut solver = TestSolver::default();
+
+        let start_time_1 = solver.new_variable(5, 5);
+        let start_time_2 = solver.new_variable(6, 7);
+
+        let durations = [3, 2];
+        let resource_requirements = [1, 1];
+        let resource_capacity = 1;
+
+        let _ = solver
+            .new_propagator(CumulativePropagator::new(
+                [start_time_1, start_time_2].into(),
+                &durations,
+                &resource_requirements,
+                resource_capacity,
+            ))
+            .expect_err("Expected conflict at the root level");
+    }
+}

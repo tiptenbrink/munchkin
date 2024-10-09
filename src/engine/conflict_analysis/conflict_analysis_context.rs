@@ -1,7 +1,6 @@
 use std::cmp::min;
 
 use crate::basic_types::ClauseReference;
-use crate::basic_types::ConflictInfo;
 use crate::basic_types::ConstraintReference;
 use crate::basic_types::StoredConflictInfo;
 use crate::branching::Brancher;
@@ -55,13 +54,14 @@ impl<'a> ConflictAnalysisContext<'a> {
             .enqueue_decision_literal(decision_literal)
     }
 
-    pub(crate) fn enqueue_propagated_literal(
-        &mut self,
-        propagated_literal: Literal,
-        constraint_reference: ConstraintReference,
-    ) -> Option<ConflictInfo> {
-        self.assignments_propositional
-            .enqueue_propagated_literal(propagated_literal, constraint_reference)
+    pub(crate) fn enqueue_propagated_literal(&mut self, propagated_literal: Literal) {
+        let result = self
+            .assignments_propositional
+            .enqueue_propagated_literal(propagated_literal, ConstraintReference::NON_REASON);
+        pumpkin_assert_simple!(
+            result.is_none(),
+            "The propagated literal should not be assigned already"
+        );
     }
 
     pub(crate) fn backtrack(&mut self, backtrack_level: usize) {
@@ -71,7 +71,6 @@ impl<'a> ConflictAnalysisContext<'a> {
 
         unassigned_literals.for_each(|literal| {
             self.brancher.on_unassign_literal(literal);
-            // TODO: We should also backtrack on the integer variables here
         });
 
         self.clausal_propagator
@@ -154,9 +153,7 @@ impl<'a> ConflictAnalysisContext<'a> {
 
         // Case 1: the literal was propagated by the clausal propagator
         if constraint_reference.is_clause() {
-            
-            self
-                .clausal_propagator
+            self.clausal_propagator
                 .get_literal_propagation_clause_reference(
                     propagated_literal,
                     self.assignments_propositional,
@@ -185,14 +182,13 @@ impl<'a> ConflictAnalysisContext<'a> {
                 .add_explanation_clause_unchecked(vec![*lit1, *lit2], self.clause_allocator),
             StoredConflictInfo::Propagation { literal, reference } => {
                 if reference.is_clause() {
-                    
                     reference.as_clause_reference()
                 } else {
                     self.create_clause_from_propagation_reason(*literal, reference.get_reason_ref())
                 }
             }
             StoredConflictInfo::Explanation {
-                propagator,
+                propagator: _,
                 conjunction,
             } => {
                 // create the explanation clause
