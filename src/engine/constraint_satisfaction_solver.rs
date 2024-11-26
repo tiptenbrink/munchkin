@@ -12,6 +12,7 @@ use rand::SeedableRng;
 
 use super::conflict_analysis::ConflictResolver;
 use super::conflict_analysis::NoLearning;
+use super::conflict_analysis::ResolutionConflictAnalyser;
 use super::sat::ClauseAllocator;
 use super::termination::TerminationCondition;
 use super::variables::IntegerVariable;
@@ -93,7 +94,7 @@ use crate::Solver;
 ///
 /// \[3\] F. Rossi, P. Van Beek, and T. Walsh, ‘Constraint programming’, Foundations of Artificial
 /// Intelligence, vol. 3, pp. 181–211, 2008.
-pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
+pub struct ConstraintSatisfactionSolver {
     /// The solver continuously changes states during the search.
     /// The state helps track additional information and contributes to making the code clearer.
     pub(crate) state: CSPSolverState,
@@ -114,7 +115,7 @@ pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
     /// Holds the assumptions when the solver is queried to solve under assumptions.
     assumptions: Vec<Literal>,
     /// Resolves and processes the conflict.
-    conflict_resolver: ConflictResolverType,
+    conflict_resolver: Box<dyn ConflictResolver>,
     /// Tracks information related to the assignments of integer variables.
     pub(crate) assignments_integer: AssignmentsInteger,
     /// Contains information on which propagator to notify upon
@@ -159,7 +160,7 @@ pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
     variable_names: VariableNames,
 }
 
-impl<ConflictResolverType> Debug for ConstraintSatisfactionSolver<ConflictResolverType> {
+impl Debug for ConstraintSatisfactionSolver {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let cp_propagators: Vec<_> = self
             .cp_propagators
@@ -179,9 +180,9 @@ impl<ConflictResolverType> Debug for ConstraintSatisfactionSolver<ConflictResolv
     }
 }
 
-impl Default for ConstraintSatisfactionSolver<NoLearning> {
+impl Default for ConstraintSatisfactionSolver {
     fn default() -> Self {
-        ConstraintSatisfactionSolver::new(SatisfactionSolverOptions::default(), NoLearning)
+        ConstraintSatisfactionSolver::new(SatisfactionSolverOptions::default())
     }
 }
 
@@ -191,17 +192,36 @@ pub struct SatisfactionSolverOptions {
     /// A random generator which is used by the [`Solver`], passing it as an
     /// argument allows seeding of the randomization.
     pub random_generator: SmallRng,
+
+    /// The strategy to use when the solver reaches a conflicting state.
+    pub conflict_resolver: ConflictResolutionStrategy,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ConflictResolutionStrategy {
+    Learning,
+    NoLearning,
+}
+
+impl ConflictResolutionStrategy {
+    fn make(self) -> Box<dyn ConflictResolver> {
+        match self {
+            ConflictResolutionStrategy::Learning => Box::new(ResolutionConflictAnalyser::default()),
+            ConflictResolutionStrategy::NoLearning => Box::new(NoLearning),
+        }
+    }
 }
 
 impl Default for SatisfactionSolverOptions {
     fn default() -> Self {
         SatisfactionSolverOptions {
             random_generator: SmallRng::seed_from_u64(42),
+            conflict_resolver: ConflictResolutionStrategy::NoLearning,
         }
     }
 }
 
-impl<ConflictResolverType> ConstraintSatisfactionSolver<ConflictResolverType> {
+impl ConstraintSatisfactionSolver {
     /// Process the stored domain events. If no events were present, this returns false. Otherwise,
     /// true is returned.
     fn process_domain_events(&mut self) -> bool {
@@ -281,11 +301,8 @@ impl<ConflictResolverType> ConstraintSatisfactionSolver<ConflictResolverType> {
 }
 
 // methods that offer basic functionality
-impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<ConflictResolverType> {
-    pub fn new(
-        solver_options: SatisfactionSolverOptions,
-        conflict_resolver: ConflictResolverType,
-    ) -> Self {
+impl ConstraintSatisfactionSolver {
+    pub fn new(solver_options: SatisfactionSolverOptions) -> Self {
         let dummy_literal = Literal::new(PropositionalVariable::new(0), true);
 
         let mut csp_solver = ConstraintSatisfactionSolver {
@@ -306,7 +323,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             explanation_clause_manager: ExplanationClauseManager::default(),
             true_literal: dummy_literal,
             false_literal: !dummy_literal,
-            conflict_resolver,
+            conflict_resolver: solver_options.conflict_resolver.make(),
             clausal_propagator: ClausalPropagator::default(),
             cp_propagators: vec![],
             counters: Counters::default(),
@@ -662,7 +679,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
 }
 
 // methods that serve as the main building blocks
-impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<ConflictResolverType> {
+impl<> ConstraintSatisfactionSolver {
     fn initialise(&mut self, assumptions: &[Literal]) {
         munchkin_assert_simple!(
             !self.state.is_infeasible_under_assumptions(),
@@ -1049,7 +1066,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
 }
 
 // methods for adding constraints (propagators and clauses)
-impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<ConflictResolverType> {
+impl<> ConstraintSatisfactionSolver {
     /// Add a clause (of at least length 2) which could later be deleted. Be mindful of the effect
     /// of this on learned clauses etc. if a solve call were to be invoked after adding a clause
     /// through this function.
@@ -1173,7 +1190,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
 }
 
 // methods for getting simple info out of the solver
-impl<ConflictResolverType> ConstraintSatisfactionSolver<ConflictResolverType> {
+impl ConstraintSatisfactionSolver {
     pub fn is_propagation_complete(&self) -> bool {
         self.clausal_propagator
             .is_propagation_complete(self.assignments_propositional.num_trail_entries())

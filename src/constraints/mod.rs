@@ -40,7 +40,6 @@ pub use constraint_poster::*;
 pub use cumulative::*;
 pub use element::*;
 
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::engine::cp::propagation::Propagator;
 use crate::propagators::ReifiedPropagator;
 use crate::variables::Literal;
@@ -57,19 +56,16 @@ pub trait Constraint {
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError>;
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError>;
 
     /// Add the half-reified version of the [`Constraint`] to the [`Solver`]; i.e. post the
     /// constraint `r -> constraint` where `r` is a reification literal.
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError>;
 }
@@ -78,16 +74,13 @@ impl<ConcretePropagator> Constraint for ConcretePropagator
 where
     ConcretePropagator: Propagator + 'static,
 {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         solver.add_propagator(self)
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         solver.add_propagator(ReifiedPropagator::new(self, reification_literal))
@@ -95,16 +88,13 @@ where
 }
 
 impl<C: Constraint> Constraint for Vec<C> {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         self.into_iter().try_for_each(|c| c.post(solver))
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         self.into_iter()
@@ -128,9 +118,9 @@ pub trait NegatableConstraint: Constraint {
     ///
     /// This method returns a [`ConstraintOperationError`] if the addition of the [`Constraint`] led
     /// to a root-level conflict.
-    fn reify<ConflictResolverType: ConflictResolver>(
+    fn reify(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError>
     where

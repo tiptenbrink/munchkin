@@ -5,7 +5,6 @@ pub use crate::basic_types::SolutionReference;
 pub mod solution_iterator;
 pub mod unsatisfiable;
 use crate::branching::Brancher;
-use crate::engine::conflict_analysis::ConflictResolver;
 #[cfg(doc)]
 use crate::termination::TerminationCondition;
 #[cfg(doc)]
@@ -27,20 +26,13 @@ pub enum SatisfactionResult {
 /// The result of a call to [`Solver::satisfy_under_assumptions`].
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
-pub enum SatisfactionResultUnderAssumptions<
-    'solver,
-    'brancher,
-    B: Brancher,
-    ConflictResolverType: ConflictResolver,
-> {
+pub enum SatisfactionResultUnderAssumptions<'solver, 'brancher, B: Brancher> {
     /// Indicates that a solution was found and provides the corresponding [`Solution`].
     Satisfiable(Solution),
     /// Indicates that there is no solution to the satisfaction problem due to the provided
     /// assumptions. It returns an [`UnsatisfiableUnderAssumptions`] which can be used to retrieve
     /// an unsatisfiable core.
-    UnsatisfiableUnderAssumptions(
-        UnsatisfiableUnderAssumptions<'solver, 'brancher, B, ConflictResolverType>,
-    ),
+    UnsatisfiableUnderAssumptions(UnsatisfiableUnderAssumptions<'solver, 'brancher, B>),
     /// Indicates that there is no solution to the satisfaction problem.
     Unsatisfiable,
     /// Indicates that it is not known whether a solution exists. This is likely due to a

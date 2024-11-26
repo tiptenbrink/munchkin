@@ -14,8 +14,6 @@ use crate::branching::Brancher;
 use crate::branching::PhaseSaving;
 use crate::branching::Vsids;
 use crate::constraints::ConstraintPoster;
-use crate::engine::conflict_analysis::ConflictResolver;
-use crate::engine::conflict_analysis::NoLearning;
 use crate::engine::cp::propagation::Propagator;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::termination::TerminationCondition;
@@ -80,15 +78,15 @@ use crate::variables::PropositionalVariable;
 ///
 /// # Using the Solver
 /// For examples on how to use the solver, see the [root-level crate documentation](crate) or [one of these examples](https://github.com/ConSol-Lab/Pumpkin/tree/master/pumpkin-lib/examples).
-pub struct Solver<ConflictResolverType> {
+pub struct Solver {
     /// The internal [`ConstraintSatisfactionSolver`] which is used to solve the problems.
-    satisfaction_solver: ConstraintSatisfactionSolver<ConflictResolverType>,
+    satisfaction_solver: ConstraintSatisfactionSolver,
     /// The function is called whenever an optimisation function finds a solution; see
     /// [`Solver::with_solution_callback`].
     solution_callback: Box<dyn Fn(&Solution)>,
 }
 
-impl Default for Solver<NoLearning> {
+impl Default for Solver {
     fn default() -> Self {
         Self {
             satisfaction_solver: Default::default(),
@@ -102,7 +100,7 @@ fn create_empty_function() -> Box<dyn Fn(&Solution)> {
     Box::new(|_| {})
 }
 
-impl<ConflictResolverType> std::fmt::Debug for Solver<ConflictResolverType> {
+impl std::fmt::Debug for Solver {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Solver")
             .field("satisfaction_solver", &self.satisfaction_solver)
@@ -110,26 +108,20 @@ impl<ConflictResolverType> std::fmt::Debug for Solver<ConflictResolverType> {
     }
 }
 
-impl Solver<NoLearning> {
+impl Solver {
     /// Creates a solver with the provided [`LearningOptions`] and [`SolverOptions`].
     pub fn with_options(solver_options: SolverOptions) -> Self {
         Solver {
-            satisfaction_solver: ConstraintSatisfactionSolver::new(solver_options, NoLearning),
+            satisfaction_solver: ConstraintSatisfactionSolver::new(solver_options),
             solution_callback: create_empty_function(),
         }
     }
 }
 
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
-    pub fn with_options_and_conflict_resolver(
-        solver_options: SolverOptions,
-        conflict_resolver: ConflictResolverType,
-    ) -> Self {
+impl Solver {
+    pub fn with_options_and_conflict_resolver(solver_options: SolverOptions) -> Self {
         Solver {
-            satisfaction_solver: ConstraintSatisfactionSolver::new(
-                solver_options,
-                conflict_resolver,
-            ),
+            satisfaction_solver: ConstraintSatisfactionSolver::new(solver_options),
             solution_callback: create_empty_function(),
         }
     }
@@ -158,7 +150,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
 }
 
 /// Methods to retrieve information about variables
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
+impl Solver {
     /// Get the literal corresponding to the given predicate. As the literal may need to be
     /// created, this possibly mutates the solver.
     ///
@@ -209,7 +201,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
 }
 
 /// Functions to create and retrieve integer and propositional variables.
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
+impl Solver {
     /// Returns an infinite iterator of positive literals of new variables. The new variables will
     /// be unnamed.
     ///
@@ -343,7 +335,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
 }
 
 /// Functions for solving with the constraints that have been added to the [`Solver`].
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
+impl Solver {
     /// Solves the current model in the [`Solver`] until it finds a solution (or is indicated to
     /// terminate by the provided [`TerminationCondition`]) and returns a [`SatisfactionResult`]
     /// which can be used to obtain the found solution or find other solutions.
@@ -382,7 +374,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
         &'this mut self,
         brancher: &'brancher mut B,
         termination: &'termination mut T,
-    ) -> SolutionIterator<'this, 'brancher, 'termination, B, T, ConflictResolverType> {
+    ) -> SolutionIterator<'this, 'brancher, 'termination, B, T> {
         SolutionIterator::new(&mut self.satisfaction_solver, brancher, termination)
     }
 
@@ -403,7 +395,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
         brancher: &'brancher mut B,
         termination: &mut T,
         assumptions: &[Literal],
-    ) -> SatisfactionResultUnderAssumptions<'this, 'brancher, B, ConflictResolverType> {
+    ) -> SatisfactionResultUnderAssumptions<'this, 'brancher, B> {
         match self
             .satisfaction_solver
             .solve_under_assumptions(assumptions, termination, brancher)
@@ -623,7 +615,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
 }
 
 /// Functions for adding new constraints to the solver.
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
+impl Solver {
     /// Add a constraint to the solver. This returns a [`ConstraintPoster`] which enables control
     /// on whether to add the constraint as-is, or whether to (half) reify it.
     ///
@@ -644,7 +636,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     pub fn add_constraint<Constraint>(
         &mut self,
         constraint: Constraint,
-    ) -> ConstraintPoster<'_, Constraint, ConflictResolverType> {
+    ) -> ConstraintPoster<'_, Constraint> {
         ConstraintPoster::new(self, constraint)
     }
 
@@ -679,7 +671,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
 }
 
 /// Default brancher implementation
-impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
+impl Solver {
     /// Creates a default [`IndependentVariableValueBrancher`] which uses [`Vsids`] as
     /// [`VariableSelector`] and [`PhaseSaving`] as its [`ValueSelector`]; it searches over all
     /// [`PropositionalVariable`]s defined in the provided `solver`.

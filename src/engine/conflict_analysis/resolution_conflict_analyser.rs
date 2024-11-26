@@ -1,7 +1,5 @@
 use super::ConflictAnalysisContext;
 use super::ConflictResolver;
-#[cfg(doc)]
-use crate::engine::ConstraintSatisfactionSolver;
 
 #[derive(Default, Debug)]
 pub(crate) struct ResolutionConflictAnalyser {
@@ -27,11 +25,11 @@ impl ConflictResolver for ResolutionConflictAnalyser {
     /// # Bibliography
     /// \[1\] J. Marques-Silva, I. Lynce, and S. Malik, ‘Conflict-driven clause learning SAT
     /// solvers’, in Handbook of satisfiability, IOS press, 2021
-    fn resolve_conflict(&mut self, context: &mut ConflictAnalysisContext) {
+    fn resolve_conflict(&mut self, _context: &mut ConflictAnalysisContext) {
         todo!()
     }
 
-    fn process(&mut self, context: &mut ConflictAnalysisContext) -> Result<(), ()> {
+    fn process(&mut self, _context: &mut ConflictAnalysisContext) -> Result<(), ()> {
         todo!()
     }
 }

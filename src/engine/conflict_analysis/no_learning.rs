@@ -2,7 +2,7 @@ use super::ConflictAnalysisContext;
 use super::ConflictResolver;
 
 #[derive(Debug, Copy, Clone)]
-pub struct NoLearning;
+pub(crate) struct NoLearning;
 
 impl ConflictResolver for NoLearning {
     fn resolve_conflict(&mut self, _context: &mut ConflictAnalysisContext) {

@@ -1,6 +1,5 @@
 use super::Constraint;
 use super::NegatableConstraint;
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::variables::Literal;
 use crate::ConstraintOperationError;
 use crate::Solver;
@@ -22,16 +21,13 @@ pub fn conjunction(literals: impl Into<Vec<Literal>>) -> impl NegatableConstrain
 struct Clause(Vec<Literal>);
 
 impl Constraint for Clause {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         solver.add_clause(self.0)
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         solver.add_clause(
@@ -53,18 +49,15 @@ impl NegatableConstraint for Clause {
 struct Conjunction(Vec<Literal>);
 
 impl Constraint for Conjunction {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         self.0
             .into_iter()
             .try_for_each(|lit| solver.add_clause([lit]))
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         self.0

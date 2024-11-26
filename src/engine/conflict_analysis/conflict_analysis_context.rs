@@ -15,17 +15,17 @@ use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::cp::WatchListCP;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ClausalPropagator;
 use crate::engine::sat::ClauseAllocator;
 use crate::engine::sat::ExplanationClauseManager;
 use crate::engine::variables::Literal;
 use crate::engine::SatisfactionSolverOptions;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
-use crate::engine::sat::ClausalPropagator;
 
 /// Used during conflict analysis to provide the necessary information.
 /// All fields are made public for the time being for simplicity. In the future that may change.
-#[allow(missing_debug_implementations)]
+#[allow(missing_debug_implementations, unused)]
 pub(crate) struct ConflictAnalysisContext<'a> {
     pub(crate) clausal_propagator: &'a mut ClausalPropagator,
     pub(crate) variable_literal_mappings: &'a VariableLiteralMappings,
@@ -227,7 +227,6 @@ impl<'a> ConflictAnalysisContext<'a> {
     ) -> ClauseReference {
         let propagation_context =
             PropagationContext::new(self.assignments_integer, self.assignments_propositional);
-        let propagator = self.reason_store.get_propagator(reason_ref);
         let reason = self
             .reason_store
             .get_or_compute(reason_ref, &propagation_context)

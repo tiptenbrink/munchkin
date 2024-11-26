@@ -1,7 +1,6 @@
 use super::less_than_or_equals;
 use crate::constraints::Constraint;
 use crate::constraints::NegatableConstraint;
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::propagators::arithmetic::linear_not_equal::LinearNotEqualPropagator;
 use crate::variables::IntegerVariable;
 use crate::variables::Literal;
@@ -60,10 +59,7 @@ impl<Var> Constraint for EqualConstraint<Var>
 where
     Var: IntegerVariable + Clone + 'static,
 {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         less_than_or_equals(self.terms.clone(), self.rhs).post(solver)?;
 
         let negated = self
@@ -76,9 +72,9 @@ where
         Ok(())
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         less_than_or_equals(self.terms.clone(), self.rhs)
@@ -118,16 +114,13 @@ impl<Var> Constraint for NotEqualConstraint<Var>
 where
     Var: IntegerVariable + Clone + 'static,
 {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         LinearNotEqualPropagator::new(self.terms, self.rhs).post(solver)
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         LinearNotEqualPropagator::new(self.terms, self.rhs).implied_by(solver, reification_literal)

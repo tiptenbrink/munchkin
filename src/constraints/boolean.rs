@@ -1,7 +1,6 @@
 use super::equals;
 use super::less_than_or_equals;
 use super::Constraint;
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::predicate;
 use crate::variables::AffineView;
 use crate::variables::DomainId;
@@ -43,18 +42,15 @@ struct BooleanLessThanOrEqual {
 }
 
 impl Constraint for BooleanLessThanOrEqual {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         let domains = self.create_domains(solver);
 
         less_than_or_equals(domains, self.rhs).post(solver)
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         let domains = self.create_domains(solver);
@@ -64,10 +60,7 @@ impl Constraint for BooleanLessThanOrEqual {
 }
 
 impl BooleanLessThanOrEqual {
-    fn create_domains<ConflictResolverType: ConflictResolver>(
-        &self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Vec<AffineView<DomainId>> {
+    fn create_domains(&self, solver: &mut Solver) -> Vec<AffineView<DomainId>> {
         let domains = self
             .bools
             .iter()
@@ -98,18 +91,15 @@ struct BooleanEqual {
 }
 
 impl Constraint for BooleanEqual {
-    fn post<ConflictResolverType: ConflictResolver>(
-        self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Result<(), ConstraintOperationError> {
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
         let domains = self.create_domains(solver);
 
         equals(domains, 0).post(solver)
     }
 
-    fn implied_by<ConflictResolverType: ConflictResolver>(
+    fn implied_by(
         self,
-        solver: &mut Solver<ConflictResolverType>,
+        solver: &mut Solver,
         reification_literal: Literal,
     ) -> Result<(), ConstraintOperationError> {
         let domains = self.create_domains(solver);
@@ -119,10 +109,7 @@ impl Constraint for BooleanEqual {
 }
 
 impl BooleanEqual {
-    fn create_domains<ConflictResolverType: ConflictResolver>(
-        &self,
-        solver: &mut Solver<ConflictResolverType>,
-    ) -> Vec<AffineView<DomainId>> {
+    fn create_domains(&self, solver: &mut Solver) -> Vec<AffineView<DomainId>> {
         self.bools
             .iter()
             .enumerate()

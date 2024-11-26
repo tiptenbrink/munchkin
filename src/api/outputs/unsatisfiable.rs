@@ -1,7 +1,6 @@
 //! Contains the representation of a unsatisfiable solution.
 
 use crate::branching::Brancher;
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::engine::ConstraintSatisfactionSolver;
 #[cfg(doc)]
 use crate::Solver;
@@ -10,29 +9,22 @@ use crate::Solver;
 /// assumptions passed to the initial [`Solver::satisfy_under_assumptions`]. Note that when this
 /// struct is dropped (using [`Drop`]) then the [`Solver`] is reset.
 #[derive(Debug)]
-pub struct UnsatisfiableUnderAssumptions<
-    'solver,
-    'brancher,
-    B: Brancher,
-    ConflictResolverType: ConflictResolver,
-> {
-    pub(crate) solver: &'solver mut ConstraintSatisfactionSolver<ConflictResolverType>,
+pub struct UnsatisfiableUnderAssumptions<'solver, 'brancher, B: Brancher> {
+    pub(crate) solver: &'solver mut ConstraintSatisfactionSolver,
     pub(crate) brancher: &'brancher mut B,
 }
 
-impl<'solver, 'brancher, B: Brancher, ConflictResolverType: ConflictResolver>
-    UnsatisfiableUnderAssumptions<'solver, 'brancher, B, ConflictResolverType>
-{
+impl<'solver, 'brancher, B: Brancher> UnsatisfiableUnderAssumptions<'solver, 'brancher, B> {
     pub fn new(
-        solver: &'solver mut ConstraintSatisfactionSolver<ConflictResolverType>,
+        solver: &'solver mut ConstraintSatisfactionSolver,
         brancher: &'brancher mut B,
     ) -> Self {
         UnsatisfiableUnderAssumptions { solver, brancher }
     }
 }
 
-impl<'solver, 'brancher, B: Brancher, ConflictResolverType: ConflictResolver> Drop
-    for UnsatisfiableUnderAssumptions<'solver, 'brancher, B, ConflictResolverType>
+impl<'solver, 'brancher, B: Brancher> Drop
+    for UnsatisfiableUnderAssumptions<'solver, 'brancher, B>
 {
     fn drop(&mut self) {
         self.solver.restore_state_at_root(self.brancher)

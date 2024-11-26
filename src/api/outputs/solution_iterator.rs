@@ -3,7 +3,6 @@
 use super::SolutionReference;
 use crate::basic_types::CSPSolverExecutionFlag;
 use crate::branching::Brancher;
-use crate::engine::conflict_analysis::ConflictResolver;
 use crate::engine::ConstraintSatisfactionSolver;
 use crate::termination::TerminationCondition;
 use crate::variables::Literal;
@@ -12,32 +11,19 @@ use crate::Solver;
 
 /// A struct which allows the retrieval of multiple solutions to a satisfaction problem.
 #[derive(Debug)]
-pub struct SolutionIterator<
-    'solver,
-    'brancher,
-    'termination,
-    B: Brancher,
-    T,
-    ConflictResolverType: ConflictResolver,
-> {
-    solver: &'solver mut ConstraintSatisfactionSolver<ConflictResolverType>,
+pub struct SolutionIterator<'solver, 'brancher, 'termination, B: Brancher, T> {
+    solver: &'solver mut ConstraintSatisfactionSolver,
     brancher: &'brancher mut B,
     termination: &'termination mut T,
     next_blocking_clause: Option<Vec<Literal>>,
     has_solution: bool,
 }
 
-impl<
-        'solver,
-        'brancher,
-        'termination,
-        B: Brancher,
-        T: TerminationCondition,
-        ConflictResolverType: ConflictResolver,
-    > SolutionIterator<'solver, 'brancher, 'termination, B, T, ConflictResolverType>
+impl<'solver, 'brancher, 'termination, B: Brancher, T: TerminationCondition>
+    SolutionIterator<'solver, 'brancher, 'termination, B, T>
 {
     pub(crate) fn new(
-        solver: &'solver mut ConstraintSatisfactionSolver<ConflictResolverType>,
+        solver: &'solver mut ConstraintSatisfactionSolver,
         brancher: &'brancher mut B,
         termination: &'termination mut T,
     ) -> Self {

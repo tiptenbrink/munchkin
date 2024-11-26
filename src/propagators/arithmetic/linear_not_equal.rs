@@ -25,13 +25,13 @@ impl<Var: IntegerVariable + 'static> Propagator for LinearNotEqualPropagator<Var
         "LinearNe"
     }
 
-    fn propagate(&self, context: PropagationContextMut) -> PropagationStatusCP {
+    fn propagate(&self, _context: PropagationContextMut) -> PropagationStatusCP {
         todo!()
     }
 
     fn initialise_at_root(
         &mut self,
-        context: &mut PropagatorInitialisationContext,
+        _context: &mut PropagatorInitialisationContext,
     ) -> Result<(), PropositionalConjunction> {
         todo!()
     }

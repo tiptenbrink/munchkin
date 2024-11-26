@@ -8,3 +8,4 @@ mod resolution_conflict_analyser;
 pub(crate) use conflict_analysis_context::ConflictAnalysisContext;
 pub(crate) use conflict_resolver::*;
 pub(crate) use no_learning::*;
+pub(crate) use resolution_conflict_analyser::*;

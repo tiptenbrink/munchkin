@@ -55,13 +55,6 @@ impl<Key: StorageKey, Value> KeyedVec<Key, Value> {
     pub(crate) fn swap(&mut self, a: usize, b: usize) {
         self.elements.swap(a, b)
     }
-
-    pub(crate) fn into_entries(self) -> impl Iterator<Item = (Key, Value)> {
-        self.elements
-            .into_iter()
-            .enumerate()
-            .map(|(idx, value)| (Key::create_from_index(idx), value))
-    }
 }
 
 impl<Key: StorageKey, Value: Clone> KeyedVec<Key, Value> {

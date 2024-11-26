@@ -57,7 +57,7 @@ impl ConflictInfo {
 /// [`ConflictInfo::Explanation`] variant with the propagator which caused the conflict.
 #[derive(Debug, PartialEq, Eq, Clone)]
 #[allow(variant_size_differences)]
-pub enum StoredConflictInfo {
+pub(crate) enum StoredConflictInfo {
     // virtual binary clauses do not have a constraint reference
     //  these are inlined clauses that are only present in the watch list of the propagation
     // clause propagator
