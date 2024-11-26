@@ -1,8 +1,8 @@
 use std::fmt::Debug;
 
 use super::Constraint;
-use crate::propagators::cumulative::CumulativePropagator;
 use crate::munchkin_assert_simple;
+use crate::propagators::cumulative::CumulativePropagator;
 use crate::variables::IntegerVariable;
 
 /// Creates the [Cumulative](https://sofdem.github.io/gccat/gccat/Ccumulative.html) [`Constraint`].

@@ -5,21 +5,9 @@ use std::ops::Range;
 use rand::Rng;
 use rand::SeedableRng;
 
-#[cfg(doc)]
-use crate::branching::InDomainRandom;
-#[cfg(doc)]
-use crate::branching::SelectionContext;
 use crate::munchkin_assert_moderate;
-#[cfg(doc)]
-use crate::Solver;
 
-/// A trait for generating random values; an example of where this is used is in the
-/// [`InDomainRandom`] value selector where it is used to determine which value in the domain to
-/// select.
-///
-/// At the moment, the randomness in the solver is controlled by the
-/// [`Solver`] and the random number generator is by this structure to the
-/// [`SelectionContext`].
+/// A trait for generating random values.
 ///
 /// # Testing
 /// We have also created an implementation of this trait which takes as input a list of `usize`s and
@@ -35,7 +23,7 @@ pub trait Random: Debug {
     /// ```rust
     /// # use rand::rngs::SmallRng;
     /// # use rand::SeedableRng;
-    /// # use pumpkin_lib::Random;
+    /// # use munchkin::Random;
     /// // First we create our random object
     /// let mut rng = SmallRng::seed_from_u64(42);
     /// // Then we flip a coin with probability 0.5
@@ -58,7 +46,7 @@ pub trait Random: Debug {
     /// ```rust
     /// # use rand::rngs::SmallRng;
     /// # use rand::SeedableRng;
-    /// # use pumpkin_lib::Random;
+    /// # use munchkin::Random;
     /// // First we create our random object
     /// let mut rng = SmallRng::seed_from_u64(42);
     /// // Then we create the elements to select from

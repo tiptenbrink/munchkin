@@ -16,9 +16,9 @@ use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::predicate;
 use crate::munchkin_assert_eq_simple;
 use crate::munchkin_assert_simple;
+use crate::predicate;
 
 #[derive(Debug, Default)]
 pub(crate) struct VariableLiteralMappings {

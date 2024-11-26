@@ -53,11 +53,11 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::engine::DebugHelper;
-use crate::propagators::clausal::ClausalPropagator;
 use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_extreme;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
+use crate::propagators::clausal::ClausalPropagator;
 use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;

@@ -13,13 +13,13 @@ use crate::engine::cp::reason::ReasonRef;
 use crate::engine::cp::reason::ReasonStore;
 use crate::engine::cp::AssignmentsInteger;
 use crate::engine::cp::PropagatorQueue;
+use crate::engine::cp::VariableLiteralMappings;
+use crate::engine::cp::WatchListCP;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::sat::ExplanationClauseManager;
 use crate::engine::variables::Literal;
 use crate::engine::SatisfactionSolverOptions;
-use crate::engine::cp::VariableLiteralMappings;
-use crate::engine::cp::WatchListCP;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
 

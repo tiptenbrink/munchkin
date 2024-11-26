@@ -4,7 +4,6 @@ mod event_sink;
 pub(crate) mod propagation;
 mod propagator_queue;
 pub(crate) mod reason;
-pub(crate) mod test_helper;
 mod variable_literal_mappings;
 mod watch_list_cp;
 mod watch_list_propositional;

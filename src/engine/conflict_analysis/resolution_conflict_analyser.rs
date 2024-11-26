@@ -1,4 +1,5 @@
-use super::{ConflictAnalysisContext, ConflictResolver};
+use super::ConflictAnalysisContext;
+use super::ConflictResolver;
 #[cfg(doc)]
 use crate::engine::ConstraintSatisfactionSolver;
 

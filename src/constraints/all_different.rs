@@ -3,7 +3,8 @@ use super::Constraint;
 use crate::propagators::all_different::AllDifferentPropagator;
 use crate::variables::IntegerVariable;
 
-/// Creates the [`Constraint`] that enforces that all the given `variables` are distinct using a decomposition.
+/// Creates the [`Constraint`] that enforces that all the given `variables` are distinct using a
+/// decomposition.
 pub fn all_different_decomposition<Var: IntegerVariable + 'static>(
     variables: impl Into<Box<[Var]>>,
 ) -> impl Constraint {

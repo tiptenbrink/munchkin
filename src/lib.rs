@@ -24,11 +24,11 @@
 //! Pumpkin can be used to solve a variety of problems. The first step to solving a problem is
 //! **adding variables**:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::OptimisationResult;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::ProblemSolution;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::OptimisationResult;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::ProblemSolution;
+//! # use munchkin::constraints::Constraint;
 //! # use std::cmp::max;
 //! // We create the solver with default options
 //! let mut solver = Solver::default();
@@ -41,12 +41,12 @@
 //!
 //! Then we can **add constraints** supported by the [`Solver`]:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::OptimisationResult;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::ProblemSolution;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::OptimisationResult;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::ProblemSolution;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! # use std::cmp::max;
 //! # let mut solver = Solver::default();
 //! # let x = solver.new_bounded_integer(5, 10);
@@ -63,8 +63,8 @@
 //! determine when the solver should stop searching and the variable/value selection strategy which
 //! should be used:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::termination::Indefinite;
+//! # use munchkin::Solver;
+//! # use munchkin::termination::Indefinite;
 //! # let mut solver = Solver::default();
 //! // We create a termination condition which allows the solver to run indefinitely
 //! let mut termination = Indefinite;
@@ -75,12 +75,12 @@
 //!
 //! **Finding a solution** to this problem can be done by using [`Solver::satisfy`]:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::SatisfactionResult;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::ProblemSolution;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::SatisfactionResult;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::ProblemSolution;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! # use std::cmp::max;
 //! # let mut solver = Solver::default();
 //! # let x = solver.new_bounded_integer(5, 10);
@@ -107,9 +107,9 @@
 //! **Optimizing an objective** can be done in a similar way using [`Solver::maximise`] or
 //! [`Solver::minimise`]; first the objective variable and a constraint over this value are added:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! # let mut solver = Solver::default();
 //! # let x = solver.new_bounded_integer(5, 10);
 //! # let y = solver.new_bounded_integer(-3, 15);
@@ -125,12 +125,12 @@
 //!
 //! Then we can find the optimal solution using [`Solver::minimise`] or [`Solver::maximise`]:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::OptimisationResult;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::ProblemSolution;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::OptimisationResult;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::ProblemSolution;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! # use std::cmp::max;
 //! # let mut solver = Solver::default();
 //! # let x = solver.new_bounded_integer(5, 10);
@@ -170,13 +170,13 @@
 //! clauses to the solver which means that after iterating over solutions, these solutions will
 //! remain blocked if the solver is used again.
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::SatisfactionResult;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::ProblemSolution;
-//! # use pumpkin_lib::results::solution_iterator::IteratedSolution;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::SatisfactionResult;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::ProblemSolution;
+//! # use munchkin::results::solution_iterator::IteratedSolution;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! // We create the solver with default options
 //! let mut solver = Solver::default();
 //!
@@ -236,12 +236,12 @@
 //! Pumpkin allows the user to specify assumptions which can then be used to extract an
 //! unsatisfiable core (see [`UnsatisfiableUnderAssumptions::extract_core`]).
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::results::SatisfactionResultUnderAssumptions;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::predicate;
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::constraints::Constraint;
+//! # use munchkin::Solver;
+//! # use munchkin::results::SatisfactionResultUnderAssumptions;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::predicate;
+//! # use munchkin::constraints;
+//! # use munchkin::constraints::Constraint;
 //! // We create the solver with default options
 //! let mut solver = Solver::default();
 //!
@@ -300,9 +300,9 @@ pub mod constraints;
 // from the crate.
 //
 // Example:
-// `use pumpkin_lib::Solver;`
+// `use munchkin::Solver;`
 // vs.
-// `use pumpkin_lib::api::Solver;`
+// `use munchkin::api::Solver;`
 mod api;
 
 pub use api::*;

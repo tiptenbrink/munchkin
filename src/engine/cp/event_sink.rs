@@ -2,9 +2,9 @@ use enumset::EnumSet;
 
 use super::IntDomainEvent;
 use crate::basic_types::KeyedVec;
-use crate::engine::variables::DomainId;
 #[cfg(doc)]
-use crate::engine::DomainEvents;
+use crate::engine::cp::domain_events::DomainEvents;
+use crate::engine::variables::DomainId;
 #[cfg(doc)]
 use crate::propagators;
 

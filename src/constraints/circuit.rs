@@ -1,6 +1,6 @@
-use crate::{propagators::circuit::CircuitPropagator, variables::IntegerVariable};
-
 use super::Constraint;
+use crate::propagators::circuit::CircuitPropagator;
+use crate::variables::IntegerVariable;
 
 /// Creates the [`Constraint`] that enforces that the assigned successors form a circuit
 /// (i.e. a path which visits each vertex once and starts and ends at the same node).

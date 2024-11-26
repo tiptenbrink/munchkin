@@ -5,8 +5,6 @@ use bitfield::Bit;
 use bitfield::BitRange;
 
 use crate::basic_types::ConstraintReference;
-#[cfg(doc)]
-use crate::engine::clause_allocators::clause_allocator_interface::ClauseAllocatorInterface;
 use crate::engine::variables::Literal;
 use crate::munchkin_assert_moderate;
 

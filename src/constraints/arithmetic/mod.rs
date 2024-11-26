@@ -5,7 +5,8 @@ pub use equality::*;
 pub use inequality::*;
 
 use super::Constraint;
-use crate::{propagators::arithmetic::maximum::MaximumPropagator, variables::IntegerVariable};
+use crate::propagators::arithmetic::maximum::MaximumPropagator;
+use crate::variables::IntegerVariable;
 
 /// Creates the [`Constraint`] `a + b = c`.
 pub fn plus<Var: IntegerVariable + 'static>(a: Var, b: Var, c: Var) -> impl Constraint {

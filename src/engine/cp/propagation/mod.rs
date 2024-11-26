@@ -92,14 +92,12 @@ pub(crate) use propagator_initialisation_context::PropagatorInitialisationContex
 pub(crate) use propagator_var_id::PropagatorVarId;
 
 #[cfg(doc)]
+use crate::engine::cp::domain_events::DomainEvents;
+#[cfg(doc)]
 use crate::engine::test_helper::TestSolver;
 #[cfg(doc)]
 use crate::engine::variables::IntegerVariable;
 #[cfg(doc)]
 use crate::engine::ConstraintSatisfactionSolver;
 #[cfg(doc)]
-use crate::engine::DomainEvents;
-#[cfg(doc)]
 use crate::propagators;
-#[cfg(doc)]
-use crate::propagators::linear_less_or_equal::LinearLessOrEqualPropagator;

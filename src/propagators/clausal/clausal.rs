@@ -5,10 +5,9 @@ use crate::basic_types::ConflictInfo;
 use crate::basic_types::ConstraintOperationError;
 use crate::basic_types::HashMap;
 use crate::basic_types::KeyedVec;
-
 use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
-use crate::engine::variables::Literal;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::variables::Literal;
 use crate::engine::Preprocessor;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;

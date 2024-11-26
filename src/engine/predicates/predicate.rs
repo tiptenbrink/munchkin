@@ -1,10 +1,10 @@
 use super::integer_predicate::IntegerPredicate;
+#[cfg(doc)]
+use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::variables::DomainId;
 #[cfg(doc)]
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
-#[cfg(doc)]
-use crate::engine::cp::VariableLiteralMappings;
 
 /// This structure is oftentimes used to represent propagations, explanations or decisions. It can
 /// either represent an [`IntegerPredicate`], a [`Literal`] which is linked to an

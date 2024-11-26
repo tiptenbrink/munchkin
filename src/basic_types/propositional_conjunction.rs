@@ -94,10 +94,10 @@ impl PartialEq for PropositionalConjunction {
 ///
 /// # Example
 /// ```rust
-/// # use pumpkin_lib::predicates::PropositionalConjunction;
-/// # use pumpkin_lib::Solver;
-/// # use pumpkin_lib::conjunction;
-/// # use pumpkin_lib::predicate;
+/// # use munchkin::predicates::PropositionalConjunction;
+/// # use munchkin::Solver;
+/// # use munchkin::conjunction;
+/// # use munchkin::predicate;
 /// let mut solver = Solver::default();
 /// let x = solver.new_bounded_integer(0, 10);
 /// let y = solver.new_bounded_integer(5, 15);

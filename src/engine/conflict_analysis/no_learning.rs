@@ -1,4 +1,5 @@
-use super::{ConflictAnalysisContext, ConflictResolver};
+use super::ConflictAnalysisContext;
+use super::ConflictResolver;
 
 #[derive(Debug, Copy, Clone)]
 pub struct NoLearning;

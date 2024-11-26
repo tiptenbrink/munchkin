@@ -23,8 +23,8 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
 use crate::engine::ConstraintSatisfactionSolver;
-use crate::options::SolverOptions;
 use crate::munchkin_assert_simple;
+use crate::options::SolverOptions;
 use crate::results::solution_iterator::SolutionIterator;
 use crate::results::unsatisfiable::UnsatisfiableUnderAssumptions;
 use crate::statistics::log_statistic;
@@ -40,8 +40,8 @@ use crate::variables::PropositionalVariable;
 /// and integer variables.
 ///
 /// ```rust
-/// # use pumpkin_lib::Solver;
-/// # use crate::pumpkin_lib::variables::TransformableVariable;
+/// # use munchkin::Solver;
+/// # use crate::munchkin::variables::TransformableVariable;
 /// let mut solver = Solver::default();
 ///
 /// // Integer Variables
@@ -164,8 +164,8 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
-    /// # use pumpkin_lib::predicate;
+    /// # use munchkin::Solver;
+    /// # use munchkin::predicate;
     /// let mut solver = Solver::default();
     ///
     /// let x = solver.new_bounded_integer(0, 10);
@@ -215,8 +215,8 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```
-    /// # use pumpkin_lib::Solver;
-    /// # use pumpkin_lib::variables::Literal;
+    /// # use munchkin::Solver;
+    /// # use munchkin::variables::Literal;
     /// let mut solver = Solver::default();
     /// let literals: Vec<Literal> = solver.new_literals().take(5).collect();
     ///
@@ -233,7 +233,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can create a literal
@@ -252,7 +252,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can also create such a variable with a name
@@ -270,7 +270,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can create an integer variable with a domain in the range [0, 10]
@@ -285,7 +285,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can also create such a variable with a name
@@ -309,7 +309,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can also create an integer variable with a non-continuous domain in the follow way
@@ -326,7 +326,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```rust
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// // We can also create such a variable with a name
@@ -632,8 +632,8 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
     ///
     /// # Example
     /// ```
-    /// # use pumpkin_lib::constraints;
-    /// # use pumpkin_lib::Solver;
+    /// # use munchkin::constraints;
+    /// # use munchkin::Solver;
     /// let mut solver = Solver::default();
     ///
     /// let a = solver.new_bounded_integer(0, 3);

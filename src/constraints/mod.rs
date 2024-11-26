@@ -6,8 +6,8 @@
 //!
 //! # Example
 //! ```
-//! # use pumpkin_lib::constraints;
-//! # use pumpkin_lib::Solver;
+//! # use munchkin::constraints;
+//! # use munchkin::Solver;
 //! let mut solver = Solver::default();
 //!
 //! let a = solver.new_bounded_integer(0, 3);

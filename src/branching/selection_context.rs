@@ -5,14 +5,14 @@ use crate::basic_types::Random;
 use crate::branching::Brancher;
 #[cfg(doc)]
 use crate::engine::cp::propagation::PropagationContext;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainGeneratorIterator;
 #[cfg(doc)]
 use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::PropositionalVariable;
 use crate::engine::variables::PropositionalVariableGeneratorIterator;
-use crate::engine::cp::AssignmentsInteger;
-use crate::engine::sat::AssignmentsPropositional;
 
 /// The context provided to the [`Brancher`],
 /// it allows the retrieval of domain values of variables and access to methods from a [`Random`]
@@ -102,12 +102,12 @@ impl<'a> SelectionContext<'a> {
         domains: Option<Vec<(i32, i32)>>,
     ) -> (AssignmentsInteger, AssignmentsPropositional) {
         use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
-        use crate::engine::variables::Literal;
         use crate::engine::cp::VariableLiteralMappings;
         use crate::engine::cp::WatchListCP;
         use crate::engine::cp::WatchListPropositional;
-        use crate::propagators::clausal::ClausalPropagator;
+        use crate::engine::variables::Literal;
         use crate::munchkin_assert_simple;
+        use crate::propagators::clausal::ClausalPropagator;
 
         munchkin_assert_simple!({
             if let Some(domains) = domains.as_ref() {

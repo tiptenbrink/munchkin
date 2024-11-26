@@ -1,5 +1,9 @@
 use super::PropagatorInitialisationContext;
 #[cfg(doc)]
+use crate::asserts::munchkin_assert_ADVANCED;
+#[cfg(doc)]
+use crate::asserts::munchkin_assert_EXTREME;
+#[cfg(doc)]
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusCP;
 use crate::engine::cp::propagation::propagation_context::PropagationContext;
@@ -9,10 +13,6 @@ use crate::engine::ConstraintSatisfactionSolver;
 use crate::predicates::PropositionalConjunction;
 #[cfg(doc)]
 use crate::propagators::clausal::ClausalPropagator;
-#[cfg(doc)]
-use crate::munchkin_asserts::munchkin_assert_ADVANCED;
-#[cfg(doc)]
-use crate::munchkin_asserts::munchkin_assert_EXTREME;
 
 /// All propagators implement the [`Propagator`] trait, with the exception of the
 /// clausal propagator. Structs implementing the trait defines the main propagator logic with

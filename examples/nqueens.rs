@@ -1,9 +1,9 @@
-use pumpkin_lib::constraints;
-use pumpkin_lib::results::ProblemSolution;
-use pumpkin_lib::results::SatisfactionResult;
-use pumpkin_lib::termination::Indefinite;
-use pumpkin_lib::variables::TransformableVariable;
-use pumpkin_lib::Solver;
+use munchkin::constraints;
+use munchkin::results::ProblemSolution;
+use munchkin::results::SatisfactionResult;
+use munchkin::termination::Indefinite;
+use munchkin::variables::TransformableVariable;
+use munchkin::Solver;
 
 fn main() {
     let n = std::env::args()

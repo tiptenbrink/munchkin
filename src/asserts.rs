@@ -13,8 +13,8 @@ pub const munchkin_assert_EXTREME: u8 = 4;
 #[doc(hidden)]
 macro_rules! print_munchkin_assert_warning_message {
     () => {
-        if pumpkin_lib::asserts::munchkin_assert_LEVEL_DEFINITION >= pumpkin_lib::asserts::munchkin_assert_MODERATE {
-            warn!("Potential performance degradation: the Pumpkin assert level is set to {}, meaning many debug asserts are active which may result in performance degradation.", pumpkin_lib::asserts::munchkin_assert_LEVEL_DEFINITION);
+        if munchkin::asserts::munchkin_assert_LEVEL_DEFINITION >= munchkin::asserts::munchkin_assert_MODERATE {
+            warn!("Potential performance degradation: the Pumpkin assert level is set to {}, meaning many debug asserts are active which may result in performance degradation.", munchkin::asserts::munchkin_assert_LEVEL_DEFINITION);
         };
     };
 }

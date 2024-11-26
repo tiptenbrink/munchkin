@@ -14,15 +14,15 @@
 //! A [`Brancher`] is expected to be passed to [`Solver::satisfy`], [`Solver::maximise`], and
 //! [`Solver::minimise`]:
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::variables::PropositionalVariable;
-//! # use pumpkin_lib::branching::variable_selection::Vsids;
-//! # use pumpkin_lib::branching::value_selection::PhaseSaving;
-//! # use pumpkin_lib::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
-//! # use pumpkin_lib::variables::Literal;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::SatisfactionResult;
-//! # use crate::pumpkin_lib::results::ProblemSolution;
+//! # use munchkin::Solver;
+//! # use munchkin::variables::PropositionalVariable;
+//! # use munchkin::branching::variable_selection::Vsids;
+//! # use munchkin::branching::value_selection::PhaseSaving;
+//! # use munchkin::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
+//! # use munchkin::variables::Literal;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::SatisfactionResult;
+//! # use crate::munchkin::results::ProblemSolution;
 //! let mut solver = Solver::default();
 //!
 //! let variables = vec![solver.new_literal().get_propositional_variable()];
@@ -48,13 +48,13 @@
 //! is provided using the method
 //! [`Solver::default_brancher_over_all_propositional_variables`].
 //! ```rust
-//! # use pumpkin_lib::Solver;
-//! # use pumpkin_lib::variables::PropositionalVariable;
-//! # use pumpkin_lib::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
-//! # use pumpkin_lib::variables::Literal;
-//! # use pumpkin_lib::termination::Indefinite;
-//! # use pumpkin_lib::results::SatisfactionResult;
-//! # use crate::pumpkin_lib::results::ProblemSolution;
+//! # use munchkin::Solver;
+//! # use munchkin::variables::PropositionalVariable;
+//! # use munchkin::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
+//! # use munchkin::variables::Literal;
+//! # use munchkin::termination::Indefinite;
+//! # use munchkin::results::SatisfactionResult;
+//! # use crate::munchkin::results::ProblemSolution;
 //! let mut solver = Solver::default();
 //!
 //! let literals = vec![solver.new_literal()];

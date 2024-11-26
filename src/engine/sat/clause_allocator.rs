@@ -1,6 +1,5 @@
 use super::Clause;
 use crate::basic_types::ClauseReference;
-
 use crate::engine::variables::Literal;
 use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_moderate;

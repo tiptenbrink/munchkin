@@ -4,7 +4,7 @@
 use std::fmt::Debug;
 use std::fmt::Formatter;
 
-use super::WatchListPropositional;
+use super::cp::WatchListPropositional;
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusCP;
 use crate::basic_types::PropositionalConjunction;

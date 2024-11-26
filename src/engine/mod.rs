@@ -4,6 +4,7 @@ pub(crate) mod cp;
 pub(crate) mod predicates;
 pub(crate) mod sat;
 pub(crate) mod termination;
+pub(crate) mod test_helper;
 pub(crate) mod variables;
 
 mod debug_helper;

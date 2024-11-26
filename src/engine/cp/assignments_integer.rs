@@ -1,17 +1,17 @@
 use crate::basic_types::KeyedVec;
 use crate::basic_types::Trail;
 use crate::engine::cp::event_sink::EventSink;
+#[cfg(doc)]
+use crate::engine::cp::propagation::Propagator;
 use crate::engine::cp::reason::ReasonRef;
 use crate::engine::cp::IntDomainEvent;
 use crate::engine::predicates::integer_predicate::IntegerPredicate;
 use crate::engine::predicates::predicate::Predicate;
-#[cfg(doc)]
-use crate::engine::cp::propagation::Propagator;
 use crate::engine::variables::DomainGeneratorIterator;
 use crate::engine::variables::DomainId;
-use crate::predicate;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
+use crate::predicate;
 
 #[derive(Clone, Default, Debug)]
 pub struct AssignmentsInteger {

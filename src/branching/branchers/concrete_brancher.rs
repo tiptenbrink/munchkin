@@ -1,7 +1,6 @@
-use crate::{
-    branching::{Brancher, SelectionContext},
-    predicates::Predicate,
-};
+use crate::branching::Brancher;
+use crate::branching::SelectionContext;
+use crate::predicates::Predicate;
 
 struct ConcreteBrancher {
     // TODO
