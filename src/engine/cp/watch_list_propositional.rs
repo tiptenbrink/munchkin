@@ -2,7 +2,7 @@ use enumset::EnumSet;
 use enumset::EnumSetType;
 
 use crate::basic_types::KeyedVec;
-use crate::engine::propagation::PropagatorVarId;
+use crate::engine::cp::propagation::PropagatorVarId;
 use crate::engine::variables::Literal;
 
 #[derive(Debug)]

@@ -3,11 +3,11 @@ use enumset::EnumSet;
 use super::TransformableVariable;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::predicates::predicate_constructor::PredicateConstructor;
-use crate::engine::reason::ReasonRef;
-use crate::engine::AssignmentsInteger;
-use crate::engine::EmptyDomain;
-use crate::engine::IntDomainEvent;
-use crate::engine::Watchers;
+use crate::engine::cp::reason::ReasonRef;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::EmptyDomain;
+use crate::engine::cp::IntDomainEvent;
+use crate::engine::cp::Watchers;
 
 /// A trait specifying the required behaviour of an integer variable such as retrieving a
 /// lower-bound ([`IntegerVariable::lower_bound`]) or adjusting the bounds

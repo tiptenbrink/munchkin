@@ -8,14 +8,14 @@ use crate::basic_types::KeyedVec;
 use crate::basic_types::StorageKey;
 use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
 use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
+use crate::engine::cp::AssignmentsInteger;
 use crate::engine::cp::WatchListCP;
+use crate::engine::cp::WatchListPropositional;
 use crate::engine::predicates::integer_predicate::IntegerPredicate;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::engine::AssignmentsInteger;
-use crate::engine::AssignmentsPropositional;
-use crate::engine::WatchListPropositional;
 use crate::predicate;
 use crate::pumpkin_assert_eq_simple;
 use crate::pumpkin_assert_simple;
@@ -515,8 +515,8 @@ mod tests {
     use crate::engine::cp::assignments_integer;
     use crate::engine::cp::watch_list_cp;
     use crate::engine::cp::watch_list_propositional;
-    use crate::engine::AssignmentsPropositional;
-    use crate::engine::VariableLiteralMappings;
+    use crate::engine::cp::VariableLiteralMappings;
+    use crate::engine::sat::AssignmentsPropositional;
     use crate::predicate;
 
     #[test]

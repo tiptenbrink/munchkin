@@ -8,7 +8,7 @@ use crate::basic_types::KeyedVec;
 
 use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::variables::Literal;
-use crate::engine::AssignmentsPropositional;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::Preprocessor;
 use crate::pumpkin_assert_moderate;
 use crate::pumpkin_assert_simple;

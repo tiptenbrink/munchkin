@@ -10,11 +10,12 @@ use std::time::Instant;
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
 
-use super::clause_allocators::ClauseAllocator;
 use super::conflict_analysis::ConflictResolver;
 use super::conflict_analysis::NoLearning;
+use super::sat::ClauseAllocator;
 use super::termination::TerminationCondition;
 use super::variables::IntegerVariable;
+use super::VariableNames;
 use crate::basic_types::statistic_logging::statistic_logger::log_statistic;
 use crate::basic_types::CSPSolverExecutionFlag;
 use crate::basic_types::ClauseReference;
@@ -31,35 +32,35 @@ use crate::branching::PhaseSaving;
 use crate::branching::SelectionContext;
 use crate::branching::Vsids;
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorId;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::reason::ReasonStore;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::BooleanDomainEvent;
+use crate::engine::cp::EmptyDomain;
+use crate::engine::cp::IntDomainEvent;
 use crate::engine::cp::PropagatorQueue;
+use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::cp::WatchListCP;
 use crate::engine::cp::WatchListPropositional;
 use crate::engine::debug_helper::DebugDyn;
 use crate::engine::predicates::predicate::Predicate;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorId;
-use crate::engine::propagation::PropagatorInitialisationContext;
-use crate::engine::reason::ReasonStore;
+use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ExplanationClauseManager;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::engine::BooleanDomainEvent;
 use crate::engine::DebugHelper;
-use crate::engine::EmptyDomain;
-use crate::engine::ExplanationClauseManager;
-use crate::engine::IntDomainEvent;
-use crate::engine::VariableLiteralMappings;
 use crate::propagators::clausal::ClausalPropagator;
 use crate::pumpkin_assert_advanced;
 use crate::pumpkin_assert_extreme;
 use crate::pumpkin_assert_moderate;
 use crate::pumpkin_assert_simple;
-use crate::variable_names::VariableNames;
 use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;
-use {crate::engine::AssignmentsInteger, crate::engine::AssignmentsPropositional};
 
 pub(crate) type ClausalPropagatorType = ClausalPropagator;
 pub(crate) type ClauseAllocatorType = ClauseAllocator;
@@ -1384,7 +1385,7 @@ impl CSPSolverState {
 #[cfg(test)]
 mod tests {
     use super::ConstraintSatisfactionSolver;
-    use crate::engine::reason::ReasonRef;
+    use crate::engine::cp::reason::ReasonRef;
     use crate::predicate;
 
     #[test]

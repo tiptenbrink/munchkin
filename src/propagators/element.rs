@@ -1,7 +1,7 @@
 use crate::basic_types::PropagationStatusCP;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
 use crate::predicates::PropositionalConjunction;
 use crate::variables::IntegerVariable;
 
@@ -46,7 +46,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::{engine::test_helper::TestSolver, propagators::element::ElementPropagator};
+    use crate::engine::test_helper::TestSolver;
+    use crate::propagators::element::ElementPropagator;
 
     #[test]
     fn test_simple_propagation() {

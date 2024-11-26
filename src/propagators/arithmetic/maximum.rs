@@ -1,8 +1,8 @@
 use crate::basic_types::PropagationStatusCP;
 use crate::basic_types::PropositionalConjunction;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
 use crate::variables::IntegerVariable;
 
 /// Propagator which enforces `max(array) = rhs`.

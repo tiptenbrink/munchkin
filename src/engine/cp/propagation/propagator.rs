@@ -2,8 +2,8 @@ use super::PropagatorInitialisationContext;
 #[cfg(doc)]
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusCP;
-use crate::engine::propagation::propagation_context::PropagationContext;
-use crate::engine::propagation::propagation_context::PropagationContextMut;
+use crate::engine::cp::propagation::propagation_context::PropagationContext;
+use crate::engine::cp::propagation::propagation_context::PropagationContextMut;
 #[cfg(doc)]
 use crate::engine::ConstraintSatisfactionSolver;
 use crate::predicates::PropositionalConjunction;

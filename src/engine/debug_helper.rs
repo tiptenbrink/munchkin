@@ -8,13 +8,13 @@ use super::predicates::integer_predicate::IntegerPredicate;
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
 use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorId;
 use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::predicates::predicate::Predicate;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorId;
-use crate::engine::AssignmentsPropositional;
-use crate::engine::VariableLiteralMappings;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::pumpkin_assert_simple;
 
 #[derive(Copy, Clone)]

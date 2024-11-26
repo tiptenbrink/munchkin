@@ -3,15 +3,15 @@ use std::cmp::Ordering;
 use enumset::EnumSet;
 
 use super::TransformableVariable;
+use crate::engine::cp::reason::ReasonRef;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::EmptyDomain;
+use crate::engine::cp::IntDomainEvent;
+use crate::engine::cp::Watchers;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::predicates::predicate_constructor::PredicateConstructor;
-use crate::engine::reason::ReasonRef;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
-use crate::engine::AssignmentsInteger;
-use crate::engine::EmptyDomain;
-use crate::engine::IntDomainEvent;
-use crate::engine::Watchers;
 
 /// Models the constraint `y = ax + b`, by expressing the domain of `y` as a transformation of the
 /// domain of `x`.

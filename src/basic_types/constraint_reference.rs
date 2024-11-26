@@ -9,7 +9,7 @@ use bitfield::BitMut;
 use bitfield::BitRange;
 
 use crate::basic_types::ClauseReference;
-use crate::engine::reason::ReasonRef;
+use crate::engine::cp::reason::ReasonRef;
 use crate::pumpkin_assert_moderate;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]

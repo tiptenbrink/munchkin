@@ -41,7 +41,7 @@ pub use cumulative::*;
 pub use element::*;
 
 use crate::engine::conflict_analysis::ConflictResolver;
-use crate::engine::propagation::Propagator;
+use crate::engine::cp::propagation::Propagator;
 use crate::propagators::ReifiedPropagator;
 use crate::variables::Literal;
 use crate::ConstraintOperationError;

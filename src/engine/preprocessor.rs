@@ -1,4 +1,4 @@
-use super::AssignmentsPropositional;
+use super::sat::AssignmentsPropositional;
 use crate::engine::variables::Literal;
 
 #[derive(Debug, Copy, Clone)]

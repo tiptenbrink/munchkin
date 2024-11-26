@@ -6,8 +6,8 @@ use crate::basic_types::PropositionalConjunction;
 use crate::basic_types::Trail;
 #[cfg(doc)]
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
+use crate::engine::cp::propagation::PropagationContext;
 use crate::engine::debug_helper::DebugDyn;
-use crate::engine::propagation::PropagationContext;
 use crate::pumpkin_assert_simple;
 
 /// The reason store holds a reason for each change made by a CP propagator on a trail.
@@ -143,9 +143,9 @@ impl<F: FnOnce(&PropagationContext) -> PropositionalConjunction + 'static> From<
 mod tests {
     use super::*;
     use crate::conjunction;
+    use crate::engine::cp::AssignmentsInteger;
+    use crate::engine::sat::AssignmentsPropositional;
     use crate::engine::variables::DomainId;
-    use crate::engine::AssignmentsInteger;
-    use crate::engine::AssignmentsPropositional;
 
     #[test]
     fn computing_an_eager_reason_returns_a_reference_to_the_conjunction() {

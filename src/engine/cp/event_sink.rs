@@ -51,7 +51,7 @@ impl EventSink {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::engine::IntDomainEvent;
+    use crate::engine::cp::IntDomainEvent;
 
     #[test]
     fn the_default_sink_is_empty() {

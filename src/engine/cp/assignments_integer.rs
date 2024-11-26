@@ -6,7 +6,7 @@ use crate::engine::cp::IntDomainEvent;
 use crate::engine::predicates::integer_predicate::IntegerPredicate;
 use crate::engine::predicates::predicate::Predicate;
 #[cfg(doc)]
-use crate::engine::propagation::Propagator;
+use crate::engine::cp::propagation::Propagator;
 use crate::engine::variables::DomainGeneratorIterator;
 use crate::engine::variables::DomainId;
 use crate::predicate;

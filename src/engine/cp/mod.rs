@@ -24,12 +24,12 @@ mod tests {
 
     use crate::conjunction;
     use crate::engine::cp::assignments_integer;
-    use crate::engine::propagation::PropagationContextMut;
-    use crate::engine::propagation::PropagatorId;
-    use crate::engine::reason::ReasonStore;
+    use crate::engine::cp::propagation::PropagationContextMut;
+    use crate::engine::cp::propagation::PropagatorId;
+    use crate::engine::cp::reason::ReasonStore;
+    use crate::engine::sat::AssignmentsPropositional;
     use crate::engine::variables::Literal;
     use crate::engine::variables::PropositionalVariable;
-    use crate::engine::AssignmentsPropositional;
 
     #[test]
     fn test_no_update_reason_store_if_no_update_lower_bound() {

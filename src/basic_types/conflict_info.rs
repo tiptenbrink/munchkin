@@ -3,13 +3,13 @@ use thiserror::Error;
 use crate::basic_types::ConstraintReference;
 use crate::basic_types::PropositionalConjunction;
 #[cfg(doc)]
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorId;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorId;
 use crate::engine::variables::Literal;
 #[cfg(doc)]
 use crate::engine::ConstraintSatisfactionSolver;
 #[cfg(doc)]
-use crate::engine::VariableLiteralMappings;
+use crate::engine::cp::VariableLiteralMappings;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 // Allow the larger `Explanation` variant since this `ConflictInfo` type is not used very often,

@@ -288,7 +288,6 @@ pub(crate) mod basic_types;
 pub(crate) mod engine;
 pub(crate) mod propagators;
 pub(crate) mod pumpkin_asserts;
-pub(crate) mod variable_names;
 #[cfg(doc)]
 use crate::branching::Brancher;
 #[cfg(doc)]

@@ -4,7 +4,7 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
 #[cfg(doc)]
-use crate::engine::VariableLiteralMappings;
+use crate::engine::cp::VariableLiteralMappings;
 
 /// This structure is oftentimes used to represent propagations, explanations or decisions. It can
 /// either represent an [`IntegerPredicate`], a [`Literal`] which is linked to an

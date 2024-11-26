@@ -1,8 +1,8 @@
 use enumset::enum_set;
 use enumset::EnumSet;
 
-use crate::engine::BooleanDomainEvent;
-use crate::engine::IntDomainEvent;
+use crate::engine::cp::BooleanDomainEvent;
+use crate::engine::cp::IntDomainEvent;
 
 impl DomainEvents {
     /// DomainEvents for assigning true to literal

@@ -21,4 +21,4 @@ use crate::engine::variables::IntegerVariable;
 #[cfg(doc)]
 use crate::engine::variables::Literal;
 #[cfg(doc)]
-use crate::engine::VariableLiteralMappings;
+use crate::engine::cp::VariableLiteralMappings;

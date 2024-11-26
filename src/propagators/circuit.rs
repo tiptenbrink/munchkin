@@ -1,9 +1,9 @@
-use crate::{
-    basic_types::PropagationStatusCP,
-    engine::propagation::{PropagationContextMut, Propagator, PropagatorInitialisationContext},
-    predicates::PropositionalConjunction,
-    variables::IntegerVariable,
-};
+use crate::basic_types::PropagationStatusCP;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
+use crate::predicates::PropositionalConjunction;
+use crate::variables::IntegerVariable;
 
 pub(crate) struct CircuitPropagator<Var> {
     successor: Box<[Var]>,

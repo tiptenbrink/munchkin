@@ -1,7 +1,7 @@
 use crate::basic_types::PropagationStatusCP;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
 use crate::predicates::PropositionalConjunction;
 use crate::variables::IntegerVariable;
 

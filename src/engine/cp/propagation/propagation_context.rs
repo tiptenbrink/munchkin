@@ -2,13 +2,13 @@ use super::PropagatorId;
 use crate::basic_types::ConstraintReference;
 use crate::basic_types::Inconsistency;
 use crate::engine::predicates::predicate::Predicate;
-use crate::engine::reason::Reason;
-use crate::engine::reason::ReasonStore;
+use crate::engine::cp::reason::Reason;
+use crate::engine::cp::reason::ReasonStore;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
-use crate::engine::AssignmentsInteger;
-use crate::engine::AssignmentsPropositional;
-use crate::engine::EmptyDomain;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::cp::EmptyDomain;
 use crate::pumpkin_assert_simple;
 
 /// [`PropagationContext`] is passed to propagators during propagation.

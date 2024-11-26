@@ -1,9 +1,9 @@
-use crate::{
-    basic_types::PropagationStatusCP,
-    engine::propagation::{PropagationContextMut, Propagator, PropagatorInitialisationContext},
-    predicates::PropositionalConjunction,
-    variables::IntegerVariable,
-};
+use crate::basic_types::PropagationStatusCP;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
+use crate::predicates::PropositionalConjunction;
+use crate::variables::IntegerVariable;
 
 pub(crate) struct CumulativePropagator<Var> {
     start_times: Box<[Var]>,
@@ -48,9 +48,8 @@ impl<Var: IntegerVariable + 'static> Propagator for CumulativePropagator<Var> {
 
 #[cfg(test)]
 mod tests {
-    use crate::engine::test_helper::TestSolver;
-
     use super::CumulativePropagator;
+    use crate::engine::test_helper::TestSolver;
 
     #[test]
     fn test_simple_propagation() {

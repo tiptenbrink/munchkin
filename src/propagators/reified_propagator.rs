@@ -1,13 +1,13 @@
 use crate::basic_types::ConflictInfo;
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusCP;
-use crate::engine::propagation::LocalId;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorInitialisationContext;
-use crate::engine::propagation::ReadDomains;
-use crate::engine::BooleanDomainEvent;
-use crate::engine::DomainEvents;
+use crate::engine::cp::domain_events::DomainEvents;
+use crate::engine::cp::propagation::LocalId;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::propagation::ReadDomains;
+use crate::engine::cp::BooleanDomainEvent;
 use crate::predicates::PropositionalConjunction;
 use crate::variables::Literal;
 
@@ -120,7 +120,7 @@ mod tests {
     use crate::basic_types::ConflictInfo;
     use crate::basic_types::Inconsistency;
     use crate::conjunction;
-    use crate::engine::propagation::PropagationContext;
+    use crate::engine::cp::propagation::PropagationContext;
     use crate::engine::test_helper::TestSolver;
     use crate::predicate;
     use crate::predicates::Predicate;

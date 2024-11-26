@@ -2,14 +2,14 @@ use enumset::EnumSet;
 
 use super::TransformableVariable;
 use crate::basic_types::StorageKey;
+use crate::engine::cp::reason::ReasonRef;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::EmptyDomain;
+use crate::engine::cp::IntDomainEvent;
+use crate::engine::cp::Watchers;
 use crate::engine::predicates::predicate::Predicate;
-use crate::engine::reason::ReasonRef;
 use crate::engine::variables::AffineView;
 use crate::engine::variables::IntegerVariable;
-use crate::engine::AssignmentsInteger;
-use crate::engine::EmptyDomain;
-use crate::engine::IntDomainEvent;
-use crate::engine::Watchers;
 
 /// A structure which represents the most basic [`IntegerVariable`]; it is simply the id which links
 /// to a domain (hence the name).

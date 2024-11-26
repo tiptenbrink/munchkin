@@ -1,18 +1,18 @@
 use super::PropagationContext;
-use crate::engine::domain_events::DomainEvents;
-use crate::engine::propagation::LocalId;
+use crate::engine::cp::domain_events::DomainEvents;
+use crate::engine::cp::propagation::LocalId;
 #[cfg(doc)]
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorId;
-use crate::engine::propagation::PropagatorVarId;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorId;
+use crate::engine::cp::propagation::PropagatorVarId;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::WatchListCP;
+use crate::engine::cp::WatchListPropositional;
+use crate::engine::cp::Watchers;
+use crate::engine::cp::WatchersPropositional;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
-use crate::engine::AssignmentsInteger;
-use crate::engine::AssignmentsPropositional;
-use crate::engine::WatchListCP;
-use crate::engine::WatchListPropositional;
-use crate::engine::Watchers;
-use crate::engine::WatchersPropositional;
 
 /// [`PropagatorInitialisationContext`] is used when [`Propagator`]s are initialised after creation.
 ///
@@ -104,7 +104,7 @@ impl PropagatorInitialisationContext<'_> {
 
 mod private {
     use super::*;
-    use crate::engine::propagation::propagation_context::HasAssignments;
+    use crate::engine::cp::propagation::propagation_context::HasAssignments;
 
     impl HasAssignments for PropagatorInitialisationContext<'_> {
         fn assignments_integer(&self) -> &AssignmentsInteger {

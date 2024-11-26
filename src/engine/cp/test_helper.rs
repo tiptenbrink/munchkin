@@ -8,21 +8,21 @@ use super::WatchListPropositional;
 use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusCP;
 use crate::basic_types::PropositionalConjunction;
+use crate::engine::cp::propagation::PropagationContext;
+use crate::engine::cp::propagation::PropagationContextMut;
+use crate::engine::cp::propagation::Propagator;
+use crate::engine::cp::propagation::PropagatorId;
+use crate::engine::cp::propagation::PropagatorInitialisationContext;
+use crate::engine::cp::reason::ReasonStore;
+use crate::engine::cp::AssignmentsInteger;
+use crate::engine::cp::EmptyDomain;
+use crate::engine::cp::WatchListCP;
 use crate::engine::predicates::integer_predicate::IntegerPredicate;
-use crate::engine::propagation::PropagationContext;
-use crate::engine::propagation::PropagationContextMut;
-use crate::engine::propagation::Propagator;
-use crate::engine::propagation::PropagatorId;
-use crate::engine::propagation::PropagatorInitialisationContext;
-use crate::engine::reason::ReasonStore;
+use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::engine::AssignmentsInteger;
-use crate::engine::AssignmentsPropositional;
-use crate::engine::EmptyDomain;
-use crate::engine::WatchListCP;
 
 /// A container for CP variables, which can be used to test propagators.
 #[derive(Default, Debug)]
