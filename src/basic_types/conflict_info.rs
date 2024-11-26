@@ -82,7 +82,7 @@ pub(crate) enum StoredConflictInfo {
 
 #[derive(Clone, Copy, Debug, Error)]
 #[error("missing the propagator that caused the conflict")]
-pub struct MissingPropagator;
+pub(crate) struct MissingPropagator;
 
 impl TryFrom<ConflictInfo> for StoredConflictInfo {
     type Error = MissingPropagator;

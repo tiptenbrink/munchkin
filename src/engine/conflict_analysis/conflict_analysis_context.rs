@@ -48,7 +48,7 @@ pub(crate) struct ConflictAnalysisContext<'a> {
     pub(crate) cp_trail_synced_position: &'a mut usize,
 }
 
-impl<'a> ConflictAnalysisContext<'a> {
+impl ConflictAnalysisContext<'_> {
     pub(crate) fn enqueue_decision_literal(&mut self, decision_literal: Literal) {
         self.assignments_propositional
             .enqueue_decision_literal(decision_literal)
