@@ -7,7 +7,7 @@ use crate::branching::SelectionContext;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::pumpkin_assert_eq_simple;
+use crate::munchkin_assert_eq_simple;
 
 /// A [`VariableSelector`] which implements [VSIDS \[1\]](https://dl.acm.org/doi/pdf/10.1145/378239.379017)
 /// which determines which variables should be branched on based on how often it appears in
@@ -97,7 +97,7 @@ impl<Var: StorageKey + Clone + Copy> Vsids<Var> {
                 decay_factor: DEFAULT_VSIDS_DECAY_FACTOR,
             };
         }
-        pumpkin_assert_eq_simple!(variables.len(), initial_values.len());
+        munchkin_assert_eq_simple!(variables.len(), initial_values.len());
         let mut result = Vsids {
             heap: KeyValueHeap::default(),
             increment: DEFAULT_VSIDS_INCREMENT,

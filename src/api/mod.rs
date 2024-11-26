@@ -113,19 +113,3 @@ pub mod predicates {
     #[cfg(doc)]
     use crate::variables::Literal;
 }
-
-#[doc(hidden)]
-pub mod asserts {
-    pub use crate::pumpkin_assert_advanced;
-    pub use crate::pumpkin_assert_eq_simple;
-    pub use crate::pumpkin_assert_extreme;
-    pub use crate::pumpkin_assert_moderate;
-    pub use crate::pumpkin_assert_ne_moderate;
-    pub use crate::pumpkin_assert_ne_simple;
-    pub use crate::pumpkin_assert_simple;
-    pub use crate::pumpkin_asserts::PUMPKIN_ASSERT_ADVANCED;
-    pub use crate::pumpkin_asserts::PUMPKIN_ASSERT_EXTREME;
-    pub use crate::pumpkin_asserts::PUMPKIN_ASSERT_LEVEL_DEFINITION;
-    pub use crate::pumpkin_asserts::PUMPKIN_ASSERT_MODERATE;
-    pub use crate::pumpkin_asserts::PUMPKIN_ASSERT_SIMPLE;
-}

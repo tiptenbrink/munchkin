@@ -2,9 +2,9 @@ use super::Clause;
 use crate::basic_types::ClauseReference;
 
 use crate::engine::variables::Literal;
-use crate::pumpkin_assert_advanced;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_advanced;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 #[derive(Default, Debug)]
 pub(crate) struct ClauseAllocator {
@@ -21,7 +21,7 @@ impl ClauseAllocator {
         // todo - add assert to ensure that the clause is as we expect, e.g., no duplicate literals.
         // Normally preprocess_clause would get rid of this. Perhaps could move the responsibility
         // to the clause manager, and have an unchecked version for learned clauses
-        pumpkin_assert_simple!(literals.len() >= 2);
+        munchkin_assert_simple!(literals.len() >= 2);
 
         if self.deleted_clause_references.is_empty() {
             // create a new clause reference, unseen before
@@ -55,18 +55,18 @@ impl ClauseAllocator {
     }
 
     pub(crate) fn delete_clause(&mut self, clause_reference: ClauseReference) {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             clause_reference.get_code() - 1 < self.allocated_clauses.len() as u32
         );
         // note that in the current implementation 'deleting' a clause simply labels its clause
         // reference as available  so next time a new clause is created, it can freely take
         // the value of a previous deleted clause  this may change if we change the clause
         // allocation mechanism as usual in SAT solvers
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             !self.get_clause(clause_reference).is_deleted(),
             "Cannot delete an already deleted clause."
         );
-        pumpkin_assert_advanced!(
+        munchkin_assert_advanced!(
             !self.deleted_clause_references.contains(&clause_reference),
             "Somehow the id of the deleted clause is already present in the internal data structure,
              meaning we are deleting the clause twice, unexpected."

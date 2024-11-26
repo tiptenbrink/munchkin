@@ -284,10 +284,10 @@
 //!  ```
 #[cfg(doc)]
 use crate::results::unsatisfiable::UnsatisfiableUnderAssumptions;
+pub(crate) mod asserts;
 pub(crate) mod basic_types;
 pub(crate) mod engine;
 pub(crate) mod propagators;
-pub(crate) mod pumpkin_asserts;
 #[cfg(doc)]
 use crate::branching::Brancher;
 #[cfg(doc)]

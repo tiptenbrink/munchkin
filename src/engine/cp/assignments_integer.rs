@@ -10,8 +10,8 @@ use crate::engine::cp::propagation::Propagator;
 use crate::engine::variables::DomainGeneratorIterator;
 use crate::engine::variables::DomainId;
 use crate::predicate;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 #[derive(Clone, Default, Debug)]
 pub struct AssignmentsInteger {
@@ -146,7 +146,7 @@ impl AssignmentsInteger {
     }
 
     pub fn get_assigned_value(&self, domain_id: DomainId) -> i32 {
-        pumpkin_assert_simple!(self.is_domain_assigned(domain_id));
+        munchkin_assert_simple!(self.is_domain_assigned(domain_id));
         self.domains[domain_id].lower_bound
     }
 
@@ -254,7 +254,7 @@ impl AssignmentsInteger {
         assigned_value: i32,
         reason: Option<ReasonRef>,
     ) -> Result<(), EmptyDomain> {
-        pumpkin_assert_moderate!(!self.is_domain_assigned_to_value(domain_id, assigned_value));
+        munchkin_assert_moderate!(!self.is_domain_assigned_to_value(domain_id, assigned_value));
 
         // only tighten the lower bound if needed
         if self.get_lower_bound(domain_id) < assigned_value {
@@ -398,7 +398,7 @@ impl AssignmentsInteger {
     ) -> Vec<(DomainId, i32)> {
         let mut unfixed_variables = Vec::new();
         self.trail.synchronise(new_decision_level).for_each(|entry| {
-            pumpkin_assert_moderate!(
+            munchkin_assert_moderate!(
                 !entry.predicate.is_equality_predicate(),
                 "For now we do not expect equality predicates on the trail, since currently equality predicates are split into lower and upper bound predicates."
             );
@@ -492,7 +492,7 @@ struct IntegerDomainExplicit {
 
 impl IntegerDomainExplicit {
     fn new(lower_bound: i32, upper_bound: i32, id: DomainId) -> IntegerDomainExplicit {
-        pumpkin_assert_simple!(lower_bound <= upper_bound, "Cannot create an empty domain.");
+        munchkin_assert_simple!(lower_bound <= upper_bound, "Cannot create an empty domain.");
 
         let size = upper_bound - lower_bound + 1;
         let is_value_in_domain = vec![true; size as usize];
@@ -631,7 +631,7 @@ impl IntegerDomainExplicit {
         self.lower_bound = entry.old_lower_bound;
         self.upper_bound = entry.old_upper_bound;
 
-        pumpkin_assert_moderate!(self.debug_bounds_check());
+        munchkin_assert_moderate!(self.debug_bounds_check());
     }
 }
 

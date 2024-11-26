@@ -17,8 +17,8 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::predicate;
-use crate::pumpkin_assert_eq_simple;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_eq_simple;
+use crate::munchkin_assert_simple;
 
 #[derive(Debug, Default)]
 pub(crate) struct VariableLiteralMappings {
@@ -100,8 +100,8 @@ impl VariableLiteralMappings {
         assignments_propositional: &mut AssignmentsPropositional,
         clause_allocator: &mut ClauseAllocatorType,
     ) -> DomainId {
-        pumpkin_assert_simple!(lower_bound <= upper_bound, "Inconsistent bounds.");
-        // pumpkin_assert_simple!(self.debug_check_consistency(cp_data_structures));
+        munchkin_assert_simple!(lower_bound <= upper_bound, "Inconsistent bounds.");
+        // munchkin_assert_simple!(self.debug_check_consistency(cp_data_structures));
 
         // 1. Create the integer/domain representation.
         let domain_id = assignments_integer.grow(lower_bound, upper_bound);
@@ -226,7 +226,7 @@ impl VariableLiteralMappings {
             );
         }
 
-        pumpkin_assert_eq_simple!(
+        munchkin_assert_eq_simple!(
             equality_literals.len(),
             (upper_bound - lower_bound + 1) as usize
         );
@@ -297,7 +297,7 @@ impl VariableLiteralMappings {
         // The integer variable is never bigger than the upper bound of the initial domain.
         lower_bound_literals.push(assignments_propositional.false_literal);
 
-        pumpkin_assert_eq_simple!(
+        munchkin_assert_eq_simple!(
             lower_bound_literals.len(),
             (upper_bound - lower_bound + 2) as usize
         );
@@ -325,7 +325,7 @@ impl VariableLiteralMappings {
         variable: PropositionalVariable,
         predicate: IntegerPredicate,
     ) {
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             !self.literal_to_predicates[Literal::new(variable, false)].contains(&predicate),
             "The predicate is already attached to the _negative_ literal, cannot do this twice."
         );
@@ -337,7 +337,7 @@ impl VariableLiteralMappings {
             Literal,
             Vec<IntegerPredicate>,
         >| {
-            pumpkin_assert_simple!(
+            munchkin_assert_simple!(
                 !mapping_literal_to_predicates[literal].contains(&predicate),
                 "The predicate is already attached to the literal, cannot do this twice."
             );

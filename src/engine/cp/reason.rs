@@ -8,7 +8,7 @@ use crate::basic_types::Trail;
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
 use crate::engine::cp::propagation::PropagationContext;
 use crate::engine::debug_helper::DebugDyn;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_simple;
 
 /// The reason store holds a reason for each change made by a CP propagator on a trail.
 ///   This trail makes is easy to garbage collect reasons by simply synchronising whenever
@@ -22,7 +22,7 @@ impl ReasonStore {
     pub fn push(&mut self, propagator: PropagatorId, reason: Reason) -> ReasonRef {
         let index = self.trail.len();
         self.trail.push((propagator, reason));
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             index < (1 << 30),
             "ReasonRef in reason store should fit in ContraintReference, \
              which has 30 bits available at most"

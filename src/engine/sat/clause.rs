@@ -1,6 +1,6 @@
 use crate::engine::variables::Literal;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 #[allow(clippy::len_without_is_empty)] // The clause will always have at least two literals.
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub(crate) struct Clause {
 
 impl Clause {
     pub(crate) fn new(literals: Vec<Literal>, is_learned: bool) -> Clause {
-        pumpkin_assert_simple!(literals.len() >= 2);
+        munchkin_assert_simple!(literals.len() >= 2);
 
         let num_literals = literals.len() as u32;
         Clause {
@@ -46,7 +46,7 @@ impl Clause {
     //  to delete a clause, use the ClauseManager
     //  could restrict access of this method in the future
     pub(crate) fn mark_deleted(&mut self) {
-        pumpkin_assert_moderate!(!self.is_deleted);
+        munchkin_assert_moderate!(!self.is_deleted);
         self.is_deleted = true;
     }
 }

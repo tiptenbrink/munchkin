@@ -10,8 +10,8 @@ use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::variables::Literal;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::Preprocessor;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 #[derive(Default, Debug)]
 pub(crate) struct ClausalPropagator {
@@ -33,14 +33,14 @@ impl ClausalPropagator {
         propagated_literal: Literal,
         assignments: &AssignmentsPropositional,
     ) -> ClauseReference {
-        pumpkin_assert_moderate!(assignments
+        munchkin_assert_moderate!(assignments
             .get_literal_reason_constraint(propagated_literal)
             .is_clause());
 
         let clause_reference: ClauseReference = assignments
             .get_literal_reason_constraint(propagated_literal)
             .into();
-        pumpkin_assert_moderate!(clause_reference.is_allocated_clause());
+        munchkin_assert_moderate!(clause_reference.is_allocated_clause());
 
         clause_reference
     }
@@ -51,7 +51,7 @@ impl ClausalPropagator {
         assignments: &mut AssignmentsPropositional,
         clause_allocator: &mut ClauseAllocatorType,
     ) -> Result<(), ConstraintOperationError> {
-        pumpkin_assert_simple!(assignments.is_at_the_root_level());
+        munchkin_assert_simple!(assignments.is_at_the_root_level());
 
         if self.is_in_infeasible_state {
             return Err(ConstraintOperationError::InfeasibleState);
@@ -118,8 +118,8 @@ impl ClausalPropagator {
         is_learned: bool,
         clause_allocator: &mut ClauseAllocatorType,
     ) -> Option<ClauseReference> {
-        pumpkin_assert_moderate!(literals.len() >= 2);
-        pumpkin_assert_simple!(!self.is_in_infeasible_state);
+        munchkin_assert_moderate!(literals.len() >= 2);
+        munchkin_assert_simple!(!self.is_in_infeasible_state);
 
         let clause_reference = clause_allocator.create_clause(literals, is_learned);
         let clause = clause_allocator.get_clause(clause_reference);
@@ -154,7 +154,7 @@ impl ClausalPropagator {
         assignments: &mut AssignmentsPropositional,
         clause_manager: &mut ClauseAllocatorType,
     ) -> Result<(), ConflictInfo> {
-        pumpkin_assert_simple!(!self.is_in_infeasible_state);
+        munchkin_assert_simple!(!self.is_in_infeasible_state);
         // this function is implemented as one long function
         //  dividing this function into several smaller functions would normally make sense for
         // readability  however this is a performance hotspot, so it is hard to divide the
@@ -163,7 +163,7 @@ impl ClausalPropagator {
         while self.next_position_on_trail_to_propagate < assignments.num_trail_entries() {
             let true_literal =
                 assignments.get_trail_entry(self.next_position_on_trail_to_propagate);
-            pumpkin_assert_simple!(assignments.is_literal_assigned_true(true_literal));
+            munchkin_assert_simple!(assignments.is_literal_assigned_true(true_literal));
 
             // effectively remove all watches from this true_literal
             // then go through the previous watches one by one and insert them as indicated (some
@@ -268,7 +268,7 @@ impl ClausalPropagator {
                     .enqueue_propagated_literal(watched_clause[0], watched_clause_reference.into());
                 if let Some(conflict_info) = conflict_info {
                     // conflict detected, stop any further propagation and report the conflict
-                    //  pumpkin_assert_advanced(state_.assignments_.
+                    //  munchkin_assert_advanced(state_.assignments_.
                     // IsAssignedFalse(watched_clause[0]), "Sanity check.");
                     // readd the remaining watchers to the watch list
                     while current_index < self.watch_lists[!true_literal].len() {
@@ -288,7 +288,7 @@ impl ClausalPropagator {
     }
 
     pub(crate) fn synchronise(&mut self, trail_size: usize) {
-        pumpkin_assert_simple!(self.next_position_on_trail_to_propagate >= trail_size);
+        munchkin_assert_simple!(self.next_position_on_trail_to_propagate >= trail_size);
         self.next_position_on_trail_to_propagate = trail_size;
     }
 
@@ -472,7 +472,7 @@ impl ClausalPropagator {
         clause: &[Literal],
         clause_reference: ClauseReference,
     ) {
-        pumpkin_assert_simple!(clause.len() >= 2);
+        munchkin_assert_simple!(clause.len() >= 2);
 
         self.watch_lists[clause[0]].push(ClauseWatcher {
             cached_literal: clause[1],

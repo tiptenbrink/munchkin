@@ -9,7 +9,7 @@ use crate::engine::variables::Literal;
 use crate::engine::cp::AssignmentsInteger;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::cp::EmptyDomain;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_simple;
 
 /// [`PropagationContext`] is passed to propagators during propagation.
 /// It may be queried to retrieve information about the current variable domains such as the
@@ -65,7 +65,7 @@ impl<'a> PropagationContextMut<'a> {
 
     /// Apply a reification literal to all the explanations that are passed to the context.
     pub(crate) fn with_reification(&mut self, reification_literal: Literal) {
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             self.reification_literal.is_none(),
             "cannot reify an already reified propagation context"
         );

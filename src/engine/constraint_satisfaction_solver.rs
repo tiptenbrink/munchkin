@@ -54,10 +54,10 @@ use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::engine::DebugHelper;
 use crate::propagators::clausal::ClausalPropagator;
-use crate::pumpkin_assert_advanced;
-use crate::pumpkin_assert_extreme;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_advanced;
+use crate::munchkin_assert_extreme;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;
@@ -330,7 +330,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
         csp_solver.false_literal = !true_literal;
 
         let result = csp_solver.add_clause([true_literal]);
-        pumpkin_assert_simple!(result.is_ok());
+        munchkin_assert_simple!(result.is_ok());
 
         csp_solver
     }
@@ -448,7 +448,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
                 )
             }
         }
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             next_idx == values.len(),
             "Expected all values to have been processed"
         );
@@ -599,7 +599,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     fn synchronise_integer_trail_based_on_propositional_trail(
         &mut self,
     ) -> Result<(), EmptyDomain> {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.cp_trail_synced_position == self.assignments_integer.num_trail_entries(),
             "We can only sychronise the propositional trail if the integer trail is already
              sychronised."
@@ -653,10 +653,10 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     }
 
     fn synchronise_assignments(&mut self) {
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             self.sat_trail_synced_position >= self.assignments_propositional.num_trail_entries()
         );
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             self.cp_trail_synced_position >= self.assignments_integer.num_trail_entries()
         );
         self.cp_trail_synced_position = self.assignments_integer.num_trail_entries();
@@ -667,7 +667,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
 // methods that serve as the main building blocks
 impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<ConflictResolverType> {
     fn initialise(&mut self, assumptions: &[Literal]) {
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             !self.state.is_infeasible_under_assumptions(),
             "Solver is not expected to be in the infeasible under assumptions state when initialising.
              Missed extracting the core?"
@@ -807,7 +807,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     /// # Note
     /// This method performs no propagation, this is left up to the solver afterwards
     fn resolve_conflict(&mut self, brancher: &mut impl Brancher) {
-        pumpkin_assert_moderate!(self.state.conflicting());
+        munchkin_assert_moderate!(self.state.conflicting());
 
         self.compute_learned_clause(brancher);
 
@@ -870,7 +870,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
     }
 
     pub(crate) fn backtrack(&mut self, backtrack_level: usize, brancher: &mut impl Brancher) {
-        pumpkin_assert_simple!(backtrack_level < self.get_decision_level());
+        munchkin_assert_simple!(backtrack_level < self.get_decision_level());
 
         let unassigned_literals = self.assignments_propositional.synchronise(backtrack_level);
 
@@ -882,7 +882,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
         self.clausal_propagator
             .synchronise(self.assignments_propositional.num_trail_entries());
 
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             self.assignments_propositional.get_decision_level()
                 < self.assignments_integer.get_decision_level(),
             "assignments_propositional must be backtracked _before_ CPEngineDataStructures"
@@ -976,7 +976,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             self.assignments_integer.num_trail_entries() as u64 - num_assigned_variables_old as u64;
 
         // Only check fixed point propagation if there was no reported conflict.
-        pumpkin_assert_extreme!(
+        munchkin_assert_extreme!(
             self.state.conflicting()
                 || DebugHelper::debug_fixed_point_propagation(
                     &self.clausal_propagator,
@@ -1013,7 +1013,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             // A propagator-specific reason for the current conflict.
             Err(Inconsistency::Other(conflict_info)) => {
                 if let ConflictInfo::Explanation(ref propositional_conjunction) = conflict_info {
-                    pumpkin_assert_advanced!(DebugHelper::debug_reported_failure(
+                    munchkin_assert_advanced!(DebugHelper::debug_reported_failure(
                         &self.assignments_integer,
                         &self.assignments_propositional,
                         &self.variable_literal_mappings,
@@ -1144,8 +1144,8 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
         &mut self,
         literals: impl IntoIterator<Item = Literal>,
     ) -> Result<(), ConstraintOperationError> {
-        pumpkin_assert_moderate!(!self.state.is_infeasible_under_assumptions());
-        pumpkin_assert_moderate!(self.is_propagation_complete());
+        munchkin_assert_moderate!(!self.state.is_infeasible_under_assumptions());
+        munchkin_assert_moderate!(self.is_propagation_complete());
 
         if self.state.is_infeasible() {
             return Err(ConstraintOperationError::InfeasibleState);
@@ -1184,7 +1184,7 @@ impl<ConflictResolverType> ConstraintSatisfactionSolver<ConflictResolverType> {
     }
 
     pub(crate) fn get_decision_level(&self) -> usize {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_propositional.get_decision_level()
                 == self.assignments_integer.get_decision_level()
         );
@@ -1351,7 +1351,7 @@ impl CSPSolverState {
     }
 
     pub(crate) fn declare_solving(&mut self) {
-        pumpkin_assert_simple!((self.is_ready() || self.conflicting()) && !self.is_infeasible());
+        munchkin_assert_simple!((self.is_ready() || self.conflicting()) && !self.is_infeasible());
         self.internal_state = CSPSolverStateInternal::Solving;
     }
 
@@ -1360,22 +1360,22 @@ impl CSPSolverState {
     }
 
     fn declare_conflict(&mut self, conflict_info: StoredConflictInfo) {
-        pumpkin_assert_simple!(!self.conflicting());
+        munchkin_assert_simple!(!self.conflicting());
         self.internal_state = CSPSolverStateInternal::Conflict { conflict_info };
     }
 
     fn declare_solution_found(&mut self) {
-        pumpkin_assert_simple!(!self.is_infeasible());
+        munchkin_assert_simple!(!self.is_infeasible());
         self.internal_state = CSPSolverStateInternal::ContainsSolution;
     }
 
     fn declare_timeout(&mut self) {
-        pumpkin_assert_simple!(!self.is_infeasible());
+        munchkin_assert_simple!(!self.is_infeasible());
         self.internal_state = CSPSolverStateInternal::Timeout;
     }
 
     fn declare_infeasible_under_assumptions(&mut self, violated_assumption: Literal) {
-        pumpkin_assert_simple!(!self.is_infeasible());
+        munchkin_assert_simple!(!self.is_infeasible());
         self.internal_state = CSPSolverStateInternal::InfeasibleUnderAssumptions {
             violated_assumption,
         }

@@ -12,7 +12,7 @@ use std::ops::DivAssign;
 use super::KeyedVec;
 use super::StorageKey;
 use crate::basic_types::HashSet;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 /// A [max-heap](https://en.wikipedia.org/wiki/Min-max_heap)
 /// which allows for generalised `Key`s (required to implement [StorageKey]) and `Value`s (which are
@@ -72,7 +72,7 @@ impl<
     }
 
     pub(crate) fn get_value(&self, key: Key) -> &Value {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             key.index() < self.map_key_to_position.len(),
             "Attempted to get key with index {} for a map with length {}",
             key.index(),
@@ -87,7 +87,7 @@ impl<
     ///  The time-complexity of this operation is O(logn)
     pub(crate) fn pop_max(&mut self) -> Option<Key> {
         let best_key = self.map_position_to_key[0];
-        pumpkin_assert_moderate!(0 == self.map_key_to_position[best_key]);
+        munchkin_assert_moderate!(0 == self.map_key_to_position[best_key]);
         self.delete_key(best_key);
         Some(best_key)
     }
@@ -115,7 +115,7 @@ impl<
             // The key is somewhere in the range [end_position, max_size-1]
             // We place the key at the end of the heap, increase end_position, and sift up
             let position = self.map_key_to_position[key];
-            pumpkin_assert_moderate!(position >= self.end_position);
+            munchkin_assert_moderate!(position >= self.end_position);
             self.swap_positions(position, self.end_position);
             self.end_position += 1;
             self.sift_up(self.end_position - 1);
@@ -165,7 +165,7 @@ impl<
         // position below to ensure a valid heap structure
         self.map_key_to_position.push(last_index);
         self.map_position_to_key.push(key);
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.map_position_to_key[last_index].index() == key.index()
                 && self.map_key_to_position[key] == last_index
         );
@@ -186,19 +186,19 @@ impl<
 
     fn swap_positions(&mut self, a: usize, b: usize) {
         let key_i = self.map_position_to_key[a];
-        pumpkin_assert_moderate!(self.map_key_to_position[key_i] == a);
+        munchkin_assert_moderate!(self.map_key_to_position[key_i] == a);
         let key_j = self.map_position_to_key[b];
-        pumpkin_assert_moderate!(self.map_key_to_position[key_j] == b);
+        munchkin_assert_moderate!(self.map_key_to_position[key_j] == b);
 
         self.values.swap(a, b);
         self.map_position_to_key.swap(a, b);
         self.map_key_to_position.swap(key_i.index(), key_j.index());
 
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.map_key_to_position[key_i] == b && self.map_key_to_position[key_j] == a
         );
 
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.map_key_to_position
                 .iter()
                 .collect::<HashSet<&usize>>()
@@ -220,7 +220,7 @@ impl<
     }
 
     fn sift_down(&mut self, position: usize) {
-        pumpkin_assert_moderate!(position < self.end_position);
+        munchkin_assert_moderate!(position < self.end_position);
 
         if !self.is_heap_locally(position) {
             let largest_child_position = self.get_largest_child_position(position);
@@ -246,7 +246,7 @@ impl<
     }
 
     fn get_largest_child_position(&self, position: usize) -> usize {
-        pumpkin_assert_moderate!(!self.is_leaf(position));
+        munchkin_assert_moderate!(!self.is_leaf(position));
 
         let left_child_position = KeyValueHeap::<Key, Value>::get_left_child_position(position);
         let right_child_position = KeyValueHeap::<Key, Value>::get_right_child_position(position);
@@ -261,7 +261,7 @@ impl<
     }
 
     fn get_parent_position(child_position: usize) -> usize {
-        pumpkin_assert_moderate!(child_position > 0, "Root has no parent.");
+        munchkin_assert_moderate!(child_position > 0, "Root has no parent.");
         (child_position - 1) / 2
     }
 

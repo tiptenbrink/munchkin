@@ -4,7 +4,7 @@ use std::collections::VecDeque;
 
 use crate::basic_types::HashSet;
 use crate::engine::cp::propagation::PropagatorId;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 #[derive(Debug)]
 pub(crate) struct PropagatorQueue {
@@ -27,7 +27,7 @@ impl PropagatorQueue {
     }
 
     pub(crate) fn enqueue_propagator(&mut self, propagator_id: PropagatorId, priority: u32) {
-        pumpkin_assert_moderate!((priority as usize) < self.queues.len());
+        munchkin_assert_moderate!((priority as usize) < self.queues.len());
 
         if !self.is_propagator_enqueued(propagator_id) {
             if self.queues[priority as usize].is_empty() {
@@ -39,10 +39,10 @@ impl PropagatorQueue {
     }
 
     pub(crate) fn pop(&mut self) -> PropagatorId {
-        pumpkin_assert_moderate!(!self.is_empty());
+        munchkin_assert_moderate!(!self.is_empty());
 
         let top_priority = self.present_priorities.peek().unwrap().0 as usize;
-        pumpkin_assert_moderate!(!self.queues[top_priority].is_empty());
+        munchkin_assert_moderate!(!self.queues[top_priority].is_empty());
 
         let next_propagator_id = self.queues[top_priority].pop_front().unwrap();
 
@@ -58,7 +58,7 @@ impl PropagatorQueue {
     pub(crate) fn clear(&mut self) {
         while !self.present_priorities.is_empty() {
             let priority = self.present_priorities.pop().unwrap().0 as usize;
-            pumpkin_assert_moderate!(!self.queues[priority].is_empty());
+            munchkin_assert_moderate!(!self.queues[priority].is_empty());
             self.queues[priority].clear();
         }
         self.present_propagators.clear();

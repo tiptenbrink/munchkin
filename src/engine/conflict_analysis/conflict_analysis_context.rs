@@ -20,8 +20,8 @@ use crate::engine::variables::Literal;
 use crate::engine::SatisfactionSolverOptions;
 use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::cp::WatchListCP;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 /// Used during conflict analysis to provide the necessary information.
 /// All fields are made public for the time being for simplicity. In the future that may change.
@@ -58,14 +58,14 @@ impl<'a> ConflictAnalysisContext<'a> {
         let result = self
             .assignments_propositional
             .enqueue_propagated_literal(propagated_literal, ConstraintReference::NON_REASON);
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             result.is_none(),
             "The propagated literal should not be assigned already"
         );
     }
 
     pub(crate) fn backtrack(&mut self, backtrack_level: usize) {
-        pumpkin_assert_simple!(backtrack_level < self.get_decision_level());
+        munchkin_assert_simple!(backtrack_level < self.get_decision_level());
 
         let unassigned_literals = self.assignments_propositional.synchronise(backtrack_level);
 
@@ -76,7 +76,7 @@ impl<'a> ConflictAnalysisContext<'a> {
         self.clausal_propagator
             .synchronise(self.assignments_propositional.num_trail_entries());
 
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             self.assignments_propositional.get_decision_level()
                 < self.assignments_integer.get_decision_level(),
             "assignments_propositional must be backtracked _before_ CPEngineDataStructures"
@@ -100,10 +100,10 @@ impl<'a> ConflictAnalysisContext<'a> {
         self.propagator_queue.clear();
         //  note that variable_literal_mappings sync should be called after the sat/cp data
         // structures backtrack
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             *self.sat_trail_synced_position >= self.assignments_propositional.num_trail_entries()
         );
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             *self.cp_trail_synced_position >= self.assignments_integer.num_trail_entries()
         );
         *self.cp_trail_synced_position = self.assignments_integer.num_trail_entries();
@@ -117,7 +117,7 @@ impl<'a> ConflictAnalysisContext<'a> {
     }
 
     pub(crate) fn get_decision_level(&self) -> usize {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_propositional.get_decision_level()
                 == self.assignments_integer.get_decision_level()
         );
@@ -135,13 +135,13 @@ impl<'a> ConflictAnalysisContext<'a> {
         &mut self,
         propagated_literal: Literal,
     ) -> ClauseReference {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             !self
                 .assignments_propositional
                 .is_literal_root_assignment(propagated_literal),
             "Reasons are not kept properly for root propagations."
         );
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_propositional
                 .is_literal_assigned_true(propagated_literal),
             "Reason for propagation only makes sense for true literals."

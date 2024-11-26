@@ -2,7 +2,7 @@ use std::iter::Rev;
 use std::ops::Deref;
 use std::vec::Drain;
 
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_simple;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Trail<T> {
@@ -33,7 +33,7 @@ impl<T> Trail<T> {
     }
 
     pub(crate) fn synchronise(&mut self, new_decision_level: usize) -> Rev<Drain<T>> {
-        pumpkin_assert_simple!(new_decision_level < self.current_decision_level);
+        munchkin_assert_simple!(new_decision_level < self.current_decision_level);
 
         let new_trail_len = self.trail_delimiter[new_decision_level];
 

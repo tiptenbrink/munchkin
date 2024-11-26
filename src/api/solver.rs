@@ -24,7 +24,7 @@ use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
 use crate::engine::ConstraintSatisfactionSolver;
 use crate::options::SolverOptions;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_simple;
 use crate::results::solution_iterator::SolutionIterator;
 use crate::results::unsatisfiable::UnsatisfiableUnderAssumptions;
 use crate::statistics::log_statistic;
@@ -604,7 +604,7 @@ impl<ConflictResolverType: ConflictResolver> Solver<ConflictResolverType> {
         objective_variable: &impl IntegerVariable,
         best_objective_value: i64,
     ) {
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             (self
                 .satisfaction_solver
                 .get_assigned_integer_value(objective_variable)

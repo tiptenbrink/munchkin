@@ -8,7 +8,7 @@ use crate::basic_types::ConstraintReference;
 #[cfg(doc)]
 use crate::engine::clause_allocators::clause_allocator_interface::ClauseAllocatorInterface;
 use crate::engine::variables::Literal;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 /// Opaque clause reference that is used by clause allocators (`ClauseAllocatorInterface`).
 #[derive(PartialEq, Eq, Clone, Copy, Hash)]
@@ -50,7 +50,7 @@ impl Debug for ClauseReference {
 /// Internal methods used by the clause allocator, including constructor methods.
 impl ClauseReference {
     pub(crate) fn create_allocated_clause_reference(id: u32) -> Self {
-        pumpkin_assert_moderate!(ClauseReference::is_valid_allocated_clause_id(id));
+        munchkin_assert_moderate!(ClauseReference::is_valid_allocated_clause_id(id));
         ClauseReference { code: id }
     }
 
@@ -60,7 +60,7 @@ impl ClauseReference {
     pub(crate) fn create_virtual_binary_clause_reference(literal: Literal) -> ClauseReference {
         use bitfield::BitMut;
 
-        pumpkin_assert_moderate!(!literal.to_u32().bit(31));
+        munchkin_assert_moderate!(!literal.to_u32().bit(31));
         let mut code = literal.to_u32();
         code.set_bit(31, true);
         ClauseReference { code }
@@ -82,7 +82,7 @@ impl ClauseReference {
     }
 
     pub fn get_virtual_binary_clause_literal(&self) -> Literal {
-        pumpkin_assert_moderate!(self.is_virtual_binary_clause());
+        munchkin_assert_moderate!(self.is_virtual_binary_clause());
         let literal_code = <u32 as BitRange<u32>>::bit_range(&self.code, 30, 0);
         Literal::u32_to_literal(literal_code)
     }
@@ -99,7 +99,7 @@ impl ClauseReference {
 /// A `ConstraintReference` can be a `ClauseReference` with the same internal structure.
 impl From<ConstraintReference> for ClauseReference {
     fn from(constraint_reference: ConstraintReference) -> Self {
-        pumpkin_assert_moderate!(constraint_reference.is_clause());
+        munchkin_assert_moderate!(constraint_reference.is_clause());
         ClauseReference {
             code: constraint_reference.get_code(),
         }

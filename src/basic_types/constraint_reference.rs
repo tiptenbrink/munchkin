@@ -10,7 +10,7 @@ use bitfield::BitRange;
 
 use crate::basic_types::ClauseReference;
 use crate::engine::cp::reason::ReasonRef;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ConstraintReference {
@@ -64,7 +64,7 @@ impl ConstraintReference {
     pub const NON_REASON: ConstraintReference = ConstraintReference { code: u32::MAX };
 
     pub fn create_standard_clause_reference(clause_id: u32) -> ConstraintReference {
-        pumpkin_assert_moderate!(ConstraintReference::is_valid_allocated_clause_id(clause_id));
+        munchkin_assert_moderate!(ConstraintReference::is_valid_allocated_clause_id(clause_id));
         ConstraintReference { code: clause_id }
     }
 
@@ -104,7 +104,7 @@ impl ConstraintReference {
     }
 
     pub fn get_reason_ref(&self) -> ReasonRef {
-        pumpkin_assert_moderate!(self.is_cp_reason());
+        munchkin_assert_moderate!(self.is_cp_reason());
         let mut id = self.code;
         // clear the 30th bit, the 31st bit is assumed to already be cleared
         id.set_bit(30, false);
@@ -119,7 +119,7 @@ impl ConstraintReference {
     /// Get the underlying clause reference. If this is not a clause reference, but a propagator,
     /// this method will panic.
     pub fn as_clause_reference(self) -> ClauseReference {
-        pumpkin_assert_moderate!(self.is_clause());
+        munchkin_assert_moderate!(self.is_clause());
         ClauseReference::create_allocated_clause_reference(self.code)
     }
 }

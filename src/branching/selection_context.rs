@@ -107,9 +107,9 @@ impl<'a> SelectionContext<'a> {
         use crate::engine::cp::WatchListCP;
         use crate::engine::cp::WatchListPropositional;
         use crate::propagators::clausal::ClausalPropagator;
-        use crate::pumpkin_assert_simple;
+        use crate::munchkin_assert_simple;
 
-        pumpkin_assert_simple!({
+        munchkin_assert_simple!({
             if let Some(domains) = domains.as_ref() {
                 num_integer_variables == domains.len()
             } else {

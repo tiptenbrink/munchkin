@@ -4,7 +4,7 @@ use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 /// A trait which specifies the common behaviours of [`Solution`] and [`SolutionReference`].
 pub trait ProblemSolution: HasAssignments {
@@ -24,7 +24,7 @@ pub trait ProblemSolution: HasAssignments {
         &self,
         propositional_variable: PropositionalVariable,
     ) -> bool {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_propositional()
                 .is_variable_assigned(propositional_variable),
             "Expected retrieved propositional variable from solution to be assigned"
@@ -35,7 +35,7 @@ pub trait ProblemSolution: HasAssignments {
 
     /// Returns the assigned boolean value of the provided [`Literal`].
     fn get_literal_value(&self, literal: Literal) -> bool {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_propositional()
                 .is_literal_assigned(literal),
             "Expected retrieved literal from solution to be assigned"
@@ -46,7 +46,7 @@ pub trait ProblemSolution: HasAssignments {
 
     /// Returns the assigned integer value of the provided [`DomainId`].
     fn get_integer_value(&self, domain: DomainId) -> i32 {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             self.assignments_integer().is_domain_assigned(domain),
             "Expected retrieved integer variable from solution to be assigned"
         );

@@ -9,7 +9,7 @@ use rand::SeedableRng;
 use crate::branching::InDomainRandom;
 #[cfg(doc)]
 use crate::branching::SelectionContext;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 #[cfg(doc)]
 use crate::Solver;
 
@@ -78,7 +78,7 @@ where
     T: SeedableRng + Rng + Debug,
 {
     fn generate_bool(&mut self, probability: f64) -> bool {
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             !matches!(probability.partial_cmp(&0.0), Some(Ordering::Less))
                 && !matches!(probability.partial_cmp(&1.0), Some(Ordering::Greater)),
             "It should hold that 0.0 <= {probability} <= 1.0"
@@ -97,7 +97,7 @@ pub(crate) mod tests {
     use std::ops::Range;
 
     use super::Random;
-    use crate::pumpkin_assert_simple;
+    use crate::munchkin_assert_simple;
 
     /// A test "random" generator which takes as input a list of elements of [`usize`] and [`bool`]
     /// and returns them in order. If more values are attempted to be generated than are provided
@@ -111,7 +111,7 @@ pub(crate) mod tests {
     impl Random for TestRandom {
         fn generate_bool(&mut self, probability: f64) -> bool {
             let selected = self.bools.remove(0);
-            pumpkin_assert_simple!(
+            munchkin_assert_simple!(
                 if matches!(probability.partial_cmp(&1.0), Some(Ordering::Equal)) {
                     selected
                 } else if matches!(probability.partial_cmp(&0.0), Some(Ordering::Equal)) {
@@ -126,7 +126,7 @@ pub(crate) mod tests {
 
         fn generate_usize_in_range(&mut self, range: Range<usize>) -> usize {
             let selected = self.usizes.remove(0);
-            pumpkin_assert_simple!(
+            munchkin_assert_simple!(
                 range.contains(&selected),
                 "The selected element by `TestRandom` ({selected}) is not in the provided range ({range:?}) and thus should not be returned, please ensure that your test cases are correctly defined"
             );

@@ -7,7 +7,7 @@ use crate::branching::SelectionContext;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 /// A [`ValueSelector`] which implements [phase saving \[1\]](https://www.researchgate.net/profile/Thammanit-Pipatsrisawat/publication/220944633_A_Lightweight_Component_Caching_Scheme_for_Satisfiability_Solvers/links/0f31753c48ffead666000000/A-Lightweight-Component-Caching-Scheme-for-Satisfiability-Solvers.pdf).
 /// During the search process, values of variables are saved whenever they are assigned and the
@@ -78,7 +78,7 @@ impl<Var: StorageKey + Copy + PartialEq, Value: Copy + PartialEq> PhaseSaving<Va
                 default_value,
             };
         }
-        pumpkin_assert_moderate!(
+        munchkin_assert_moderate!(
             variables_with_initial_value
                 .iter()
                 .all(|(variable, _)| variables.contains(variable)),

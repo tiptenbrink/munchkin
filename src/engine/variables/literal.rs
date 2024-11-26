@@ -1,6 +1,6 @@
 use crate::basic_types::StorageKey;
 use crate::engine::variables::PropositionalVariable;
-use crate::pumpkin_assert_moderate;
+use crate::munchkin_assert_moderate;
 
 /// A boolean variable in the solver; represents a [`PropositionalVariable`] but with a certain
 /// polarity (i.e. it is either the positive [`PropositionalVariable`] or its negation).
@@ -35,7 +35,7 @@ impl Literal {
     pub fn u32_to_literal(literal_code: u32) -> Literal {
         let variable_index = literal_code / 2;
         let code = variable_index * 2 + ((literal_code & 1) == 1) as u32;
-        pumpkin_assert_moderate!(Literal { code }.to_u32() == literal_code);
+        munchkin_assert_moderate!(Literal { code }.to_u32() == literal_code);
         Literal { code }
     }
 }

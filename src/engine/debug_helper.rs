@@ -15,7 +15,7 @@ use crate::engine::cp::AssignmentsInteger;
 use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_simple;
 
 #[derive(Copy, Clone)]
 pub(crate) struct DebugDyn<'a> {
@@ -112,7 +112,7 @@ impl DebugHelper {
             }
         }
         // then check the clausal propagator
-        pumpkin_assert_simple!(
+        munchkin_assert_simple!(
             clausal_propagator.debug_check_state(assignments_propositional, clause_allocator)
         );
         true

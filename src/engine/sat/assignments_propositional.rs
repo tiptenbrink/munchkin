@@ -7,8 +7,8 @@ use crate::engine::cp::reason::ReasonRef;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::engine::variables::PropositionalVariableGeneratorIterator;
-use crate::pumpkin_assert_moderate;
-use crate::pumpkin_assert_simple;
+use crate::munchkin_assert_moderate;
+use crate::munchkin_assert_simple;
 
 #[derive(Clone, Debug)]
 pub struct AssignmentsPropositional {
@@ -223,13 +223,13 @@ impl AssignmentsPropositional {
     }
 
     pub fn undo_assignment(&mut self, variable: PropositionalVariable) {
-        pumpkin_assert_moderate!(self.is_variable_assigned(variable));
+        munchkin_assert_moderate!(self.is_variable_assigned(variable));
 
         self.assignment_info[variable] = PropositionalAssignmentInfo::Unassigned;
     }
 
     pub fn enqueue_decision_literal(&mut self, decision_literal: Literal) {
-        pumpkin_assert_simple!(!self.is_literal_assigned(decision_literal));
+        munchkin_assert_simple!(!self.is_literal_assigned(decision_literal));
 
         let _ = self.make_assignment(decision_literal, ConstraintReference::NULL);
     }
@@ -244,7 +244,7 @@ impl AssignmentsPropositional {
 
     /// This iterator returns the literals on the trail in _reverse_ order (LIFO)
     pub fn synchronise(&mut self, new_decision_level: usize) -> impl Iterator<Item = Literal> + '_ {
-        pumpkin_assert_simple!(new_decision_level < self.get_decision_level());
+        munchkin_assert_simple!(new_decision_level < self.get_decision_level());
         self.trail.synchronise(new_decision_level).inspect(|entry| {
             let variable = entry.get_propositional_variable();
 

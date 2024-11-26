@@ -10,9 +10,9 @@ use crate::predicates::PropositionalConjunction;
 #[cfg(doc)]
 use crate::propagators::clausal::ClausalPropagator;
 #[cfg(doc)]
-use crate::pumpkin_asserts::PUMPKIN_ASSERT_ADVANCED;
+use crate::munchkin_asserts::munchkin_assert_ADVANCED;
 #[cfg(doc)]
-use crate::pumpkin_asserts::PUMPKIN_ASSERT_EXTREME;
+use crate::munchkin_asserts::munchkin_assert_EXTREME;
 
 /// All propagators implement the [`Propagator`] trait, with the exception of the
 /// clausal propagator. Structs implementing the trait defines the main propagator logic with
