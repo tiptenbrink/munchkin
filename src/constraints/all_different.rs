@@ -6,9 +6,9 @@ use crate::variables::IntegerVariable;
 /// Creates the [`Constraint`] that enforces that all the given `variables` are distinct using a
 /// decomposition.
 pub fn all_different_decomposition<Var: IntegerVariable + 'static>(
-    variables: impl Into<Box<[Var]>>,
+    variables: impl IntoIterator<Item = Var>,
 ) -> impl Constraint {
-    let variables: Box<[Var]> = variables.into();
+    let variables: Box<[Var]> = variables.into_iter().collect();
     let mut constraints = Vec::new();
 
     for i in 0..variables.len() {
