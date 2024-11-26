@@ -1,37 +1,36 @@
-use munchkin::constraints;
+use clap::Parser;
 use munchkin::results::ProblemSolution;
 use munchkin::results::SatisfactionResult;
 use munchkin::termination::Indefinite;
 use munchkin::variables::TransformableVariable;
 use munchkin::Solver;
 
-fn main() {
-    let n = std::env::args()
-        .nth(1)
-        .expect("Please provide a value for 'n'")
-        .parse::<u32>()
-        .expect("'n' is not a valid unsigned integer");
+#[derive(Debug, Parser)]
+struct Cli {
+    /// The size of the puzzle. Should be an integer greater than 1.
+    #[arg(value_parser = clap::value_parser!(i32).range(2..))]
+    n: i32,
+}
 
-    if n < 2 {
-        println!("Please provide an 'n > 1'");
-        return;
-    }
+fn main() {
+    let Cli { n } = Cli::parse();
 
     let mut solver = Solver::default();
+
+    // The q_i variables
     let variables = (0..n)
-        .map(|_| solver.new_bounded_integer(0, n as i32 - 1))
+        .map(|_| solver.new_bounded_integer(0, n - 1))
         .collect::<Vec<_>>();
 
-    let _ = solver
-        .add_constraint(constraints::all_different(variables.clone()))
-        .post();
-
+    // The [q_i + i | 0 <= i < n] variables
     let diag1 = variables
         .iter()
         .cloned()
         .enumerate()
         .map(|(i, var)| var.offset(i as i32))
         .collect::<Vec<_>>();
+
+    // The [q_i - i | 0 <= i < n] variables
     let diag2 = variables
         .iter()
         .cloned()
@@ -39,12 +38,16 @@ fn main() {
         .map(|(i, var)| var.offset(-(i as i32)))
         .collect::<Vec<_>>();
 
-    let _ = solver
-        .add_constraint(constraints::all_different(diag1))
-        .post();
-    let _ = solver
-        .add_constraint(constraints::all_different(diag2))
-        .post();
+    // TODO: Post the correct all-different constraints.
+    // let _ = solver
+    //     .add_constraint(...)
+    //     .post();
+    // let _ = solver
+    //     .add_constraint(...)
+    //     .post();
+    // let _ = solver
+    //     .add_constraint(...)
+    //     .post();
 
     let mut brancher = solver.default_brancher_over_all_propositional_variables();
     match solver.satisfy(&mut brancher, &mut Indefinite) {
@@ -54,7 +57,7 @@ fn main() {
             for row in 0..n {
                 println!("{row_separator}");
 
-                let queen_col = solution.get_integer_value(variables[row as usize]) as u32;
+                let queen_col = solution.get_integer_value(variables[row as usize]);
 
                 for col in 0..n {
                     let string = if queen_col == col { "| * " } else { "|   " };
