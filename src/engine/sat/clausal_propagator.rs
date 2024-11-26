@@ -1,11 +1,11 @@
 use log::warn;
 
+use super::ClauseAllocator;
 use crate::basic_types::ClauseReference;
 use crate::basic_types::ConflictInfo;
 use crate::basic_types::ConstraintOperationError;
 use crate::basic_types::HashMap;
 use crate::basic_types::KeyedVec;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::Literal;
 use crate::engine::Preprocessor;
@@ -48,7 +48,7 @@ impl ClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         assignments: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> Result<(), ConstraintOperationError> {
         munchkin_assert_simple!(assignments.is_at_the_root_level());
 
@@ -98,7 +98,7 @@ impl ClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         assignments: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> Option<ClauseReference> {
         let asserting_literal = literals[0];
 
@@ -115,7 +115,7 @@ impl ClausalPropagator {
         &mut self,
         literals: Vec<Literal>,
         is_learned: bool,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> Option<ClauseReference> {
         munchkin_assert_moderate!(literals.len() >= 2);
         munchkin_assert_simple!(!self.is_in_infeasible_state);
@@ -133,7 +133,7 @@ impl ClausalPropagator {
         &mut self,
         lhs: Literal,
         rhs: Literal,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) {
         let _ = self.add_clause_unchecked(vec![!lhs, rhs], false, clause_allocator);
     }
@@ -143,7 +143,7 @@ impl ClausalPropagator {
         a: Literal,
         b: Literal,
         c: Literal,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) {
         let _ = self.add_clause_unchecked(vec![a, b, c], false, clause_allocator);
     }
@@ -151,7 +151,7 @@ impl ClausalPropagator {
     pub(crate) fn propagate(
         &mut self,
         assignments: &mut AssignmentsPropositional,
-        clause_manager: &mut ClauseAllocatorType,
+        clause_manager: &mut ClauseAllocator,
     ) -> Result<(), ConflictInfo> {
         munchkin_assert_simple!(!self.is_in_infeasible_state);
         // this function is implemented as one long function
@@ -321,7 +321,7 @@ impl ClausalPropagator {
     pub(crate) fn debug_check_state(
         &self,
         assignments: &AssignmentsPropositional,
-        clause_allocator: &ClauseAllocatorType,
+        clause_allocator: &ClauseAllocator,
     ) -> bool {
         assert!(
             self.watch_lists.len() as u32 == 2 * assignments.num_propositional_variables(),

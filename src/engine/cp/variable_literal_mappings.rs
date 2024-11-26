@@ -6,13 +6,13 @@
 
 use crate::basic_types::KeyedVec;
 use crate::basic_types::StorageKey;
-use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::cp::AssignmentsInteger;
 use crate::engine::cp::WatchListCP;
 use crate::engine::cp::WatchListPropositional;
 use crate::engine::predicates::integer_predicate::IntegerPredicate;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ClausalPropagator;
+use crate::engine::sat::ClauseAllocator;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
@@ -49,7 +49,7 @@ impl VariableLiteralMappings {
         &mut self,
         watch_list_propositional: &mut WatchListPropositional,
         predicate: IntegerPredicate,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
     ) -> PropositionalVariable {
         let variable = self.create_new_propositional_variable(
@@ -67,7 +67,7 @@ impl VariableLiteralMappings {
     pub(crate) fn create_new_propositional_variable(
         &mut self,
         watch_list_propositional: &mut WatchListPropositional,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
     ) -> PropositionalVariable {
         let new_variable_index = assignments_propositional.num_propositional_variables();
@@ -96,9 +96,9 @@ impl VariableLiteralMappings {
         assignments_integer: &mut AssignmentsInteger,
         watch_list_cp: &mut WatchListCP,
         watch_list_propositional: &mut WatchListPropositional,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> DomainId {
         munchkin_assert_simple!(lower_bound <= upper_bound, "Inconsistent bounds.");
         // munchkin_assert_simple!(self.debug_check_consistency(cp_data_structures));
@@ -127,9 +127,9 @@ impl VariableLiteralMappings {
         domain_id: DomainId,
         assignments_integer: &AssignmentsInteger,
         watch_list_propositional: &mut WatchListPropositional,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) {
         let lower_bound_literals = self.create_lower_bound_literals(
             domain_id,
@@ -174,9 +174,9 @@ impl VariableLiteralMappings {
         lower_bound_literals: &[Literal],
         assignments_integer: &AssignmentsInteger,
         watch_list_propositional: &mut WatchListPropositional,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> Box<[Literal]> {
         assert!(
             lower_bound_literals.len() >= 2,
@@ -270,9 +270,9 @@ impl VariableLiteralMappings {
         domain_id: DomainId,
         assignments_integer: &AssignmentsInteger,
         watch_list_propositional: &mut WatchListPropositional,
-        clausal_propagator: &mut ClausalPropagatorType,
+        clausal_propagator: &mut ClausalPropagator,
         assignments_propositional: &mut AssignmentsPropositional,
-        clause_allocator: &mut ClauseAllocatorType,
+        clause_allocator: &mut ClauseAllocator,
     ) -> Box<[Literal]> {
         let lower_bound = assignments_integer.get_lower_bound(domain_id);
         let upper_bound = assignments_integer.get_upper_bound(domain_id);
@@ -506,17 +506,7 @@ impl VariableLiteralMappings {
 
 #[cfg(test)]
 mod tests {
-    use assignments_integer::AssignmentsInteger;
-    use watch_list_cp::WatchListCP;
-    use watch_list_propositional::WatchListPropositional;
-
-    use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
-    use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
-    use crate::engine::cp::assignments_integer;
-    use crate::engine::cp::watch_list_cp;
-    use crate::engine::cp::watch_list_propositional;
-    use crate::engine::cp::VariableLiteralMappings;
-    use crate::engine::sat::AssignmentsPropositional;
+    use super::*;
     use crate::predicate;
 
     #[test]
@@ -525,9 +515,9 @@ mod tests {
         let mut assignments_integer = AssignmentsInteger::default();
         let mut watch_list_cp = WatchListCP::default();
         let mut watch_list_propositional = WatchListPropositional::default();
-        let mut clausal_propagator = ClausalPropagatorType::default();
+        let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
-        let mut clausal_allocator = ClauseAllocatorType::default();
+        let mut clausal_allocator = ClauseAllocator::default();
 
         let domain_id = variable_literal_mappings.create_new_domain(
             0,
@@ -556,9 +546,9 @@ mod tests {
         let mut assignments_integer = AssignmentsInteger::default();
         let mut watch_list_cp = WatchListCP::default();
         let mut watch_list_propositional = WatchListPropositional::default();
-        let mut clausal_propagator = ClausalPropagatorType::default();
+        let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
-        let mut clausal_allocator = ClauseAllocatorType::default();
+        let mut clausal_allocator = ClauseAllocator::default();
 
         let domain_id = variable_literal_mappings.create_new_domain(
             0,
@@ -585,9 +575,9 @@ mod tests {
         let mut assignments_integer = AssignmentsInteger::default();
         let mut watch_list_cp = WatchListCP::default();
         let mut watch_list_propositional = WatchListPropositional::default();
-        let mut clausal_propagator = ClausalPropagatorType::default();
+        let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
-        let mut clausal_allocator = ClauseAllocatorType::default();
+        let mut clausal_allocator = ClauseAllocator::default();
 
         let lb = -2;
         let ub = 2;
@@ -708,9 +698,9 @@ mod tests {
         let mut assignments_integer = AssignmentsInteger::default();
         let mut watch_list_cp = WatchListCP::default();
         let mut watch_list_propositional = WatchListPropositional::default();
-        let mut clausal_propagator = ClausalPropagatorType::default();
+        let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
-        let mut clausal_allocator = ClauseAllocatorType::default();
+        let mut clausal_allocator = ClauseAllocator::default();
 
         let lower_bound = 0;
         let upper_bound = 10;

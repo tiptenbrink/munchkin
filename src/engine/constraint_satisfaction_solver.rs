@@ -48,6 +48,7 @@ use crate::engine::cp::WatchListPropositional;
 use crate::engine::debug_helper::DebugDyn;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ClausalPropagator;
 use crate::engine::sat::ExplanationClauseManager;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
@@ -57,13 +58,9 @@ use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_extreme;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
-use crate::propagators::clausal::ClausalPropagator;
 use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;
-
-pub(crate) type ClausalPropagatorType = ClausalPropagator;
-pub(crate) type ClauseAllocatorType = ClauseAllocator;
 
 /// A solver which attempts to find a solution to a Constraint Satisfaction Problem (CSP) using
 /// a Lazy Clause Generation (LCG [\[1\]](https://people.eng.unimelb.edu.au/pstuckey/papers/cp09-lc.pdf))
@@ -105,7 +102,7 @@ pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
     /// Responsible for clausal propagation based on the two-watched scheme.
     /// Although technically just another propagator, we treat the clausal propagator in a special
     /// way due to efficiency and conflict analysis.
-    clausal_propagator: ClausalPropagatorType,
+    clausal_propagator: ClausalPropagator,
     /// The list of propagators. Propagators live here and are queried when events (domain changes)
     /// happen. The list is only traversed during synchronisation for now.
     cp_propagators: Vec<Box<dyn Propagator>>,
@@ -113,7 +110,7 @@ pub struct ConstraintSatisfactionSolver<ConflictResolverType> {
     /// through the clause allocator. There are two notable exceptions:
     /// - Unit clauses are stored directly on the trail.
     /// - Binary clauses may be inlined in the watch lists of the clausal propagator.
-    pub(crate) clause_allocator: ClauseAllocatorType,
+    pub(crate) clause_allocator: ClauseAllocator,
     /// Holds the assumptions when the solver is queried to solve under assumptions.
     assumptions: Vec<Literal>,
     /// Resolves and processes the conflict.
@@ -310,7 +307,7 @@ impl<ConflictResolverType: ConflictResolver> ConstraintSatisfactionSolver<Confli
             true_literal: dummy_literal,
             false_literal: !dummy_literal,
             conflict_resolver,
-            clausal_propagator: ClausalPropagatorType::default(),
+            clausal_propagator: ClausalPropagator::default(),
             cp_propagators: vec![],
             counters: Counters::default(),
             internal_parameters: solver_options,

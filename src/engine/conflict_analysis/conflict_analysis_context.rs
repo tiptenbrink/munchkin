@@ -5,8 +5,6 @@ use crate::basic_types::ConstraintReference;
 use crate::basic_types::StoredConflictInfo;
 use crate::branching::Brancher;
 use crate::engine::constraint_satisfaction_solver::CSPSolverState;
-use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::constraint_satisfaction_solver::Counters;
 use crate::engine::cp::propagation::PropagationContext;
 use crate::engine::cp::reason::ReasonRef;
@@ -17,17 +15,19 @@ use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::cp::WatchListCP;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ClauseAllocator;
 use crate::engine::sat::ExplanationClauseManager;
 use crate::engine::variables::Literal;
 use crate::engine::SatisfactionSolverOptions;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
+use crate::engine::sat::ClausalPropagator;
 
 /// Used during conflict analysis to provide the necessary information.
 /// All fields are made public for the time being for simplicity. In the future that may change.
 #[allow(missing_debug_implementations)]
 pub(crate) struct ConflictAnalysisContext<'a> {
-    pub(crate) clausal_propagator: &'a mut ClausalPropagatorType,
+    pub(crate) clausal_propagator: &'a mut ClausalPropagator,
     pub(crate) variable_literal_mappings: &'a VariableLiteralMappings,
     pub(crate) assignments_integer: &'a mut AssignmentsInteger,
     pub(crate) assignments_propositional: &'a mut AssignmentsPropositional,
@@ -36,7 +36,7 @@ pub(crate) struct ConflictAnalysisContext<'a> {
 
     pub(crate) solver_state: &'a mut CSPSolverState,
     pub(crate) brancher: &'a mut dyn Brancher,
-    pub(crate) clause_allocator: &'a mut ClauseAllocatorType,
+    pub(crate) clause_allocator: &'a mut ClauseAllocator,
     pub(crate) explanation_clause_manager: &'a mut ExplanationClauseManager,
     pub(crate) reason_store: &'a mut ReasonStore,
     pub(crate) counters: &'a mut Counters,

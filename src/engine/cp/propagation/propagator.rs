@@ -12,7 +12,7 @@ use crate::engine::cp::propagation::propagation_context::PropagationContextMut;
 use crate::engine::ConstraintSatisfactionSolver;
 use crate::predicates::PropositionalConjunction;
 #[cfg(doc)]
-use crate::propagators::clausal::ClausalPropagator;
+use crate::engine::sat::ClausalPropagator;
 
 /// All propagators implement the [`Propagator`] trait, with the exception of the
 /// clausal propagator. Structs implementing the trait defines the main propagator logic with

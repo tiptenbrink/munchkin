@@ -101,13 +101,13 @@ impl<'a> SelectionContext<'a> {
         num_propositional_variables: usize,
         domains: Option<Vec<(i32, i32)>>,
     ) -> (AssignmentsInteger, AssignmentsPropositional) {
-        use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
         use crate::engine::cp::VariableLiteralMappings;
         use crate::engine::cp::WatchListCP;
         use crate::engine::cp::WatchListPropositional;
+        use crate::engine::sat::ClausalPropagator;
+        use crate::engine::sat::ClauseAllocator;
         use crate::engine::variables::Literal;
         use crate::munchkin_assert_simple;
-        use crate::propagators::clausal::ClausalPropagator;
 
         munchkin_assert_simple!({
             if let Some(domains) = domains.as_ref() {
@@ -121,7 +121,7 @@ impl<'a> SelectionContext<'a> {
         let mut clausal_propagator = ClausalPropagator::default();
         let mut assignments_propositional = AssignmentsPropositional::default();
         let mut assignments_integer = AssignmentsInteger::default();
-        let mut clause_allocator = ClauseAllocatorType::default();
+        let mut clause_allocator = ClauseAllocator::default();
         let mut watch_list_propositional = WatchListPropositional::default();
         let mut watch_list_cp = WatchListCP::default();
 

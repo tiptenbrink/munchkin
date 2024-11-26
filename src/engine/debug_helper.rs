@@ -5,9 +5,8 @@ use log::debug;
 use log::warn;
 
 use super::predicates::integer_predicate::IntegerPredicate;
+use super::sat::ClauseAllocator;
 use crate::basic_types::PropositionalConjunction;
-use crate::engine::constraint_satisfaction_solver::ClausalPropagatorType;
-use crate::engine::constraint_satisfaction_solver::ClauseAllocatorType;
 use crate::engine::cp::propagation::PropagationContextMut;
 use crate::engine::cp::propagation::Propagator;
 use crate::engine::cp::propagation::PropagatorId;
@@ -15,6 +14,7 @@ use crate::engine::cp::AssignmentsInteger;
 use crate::engine::cp::VariableLiteralMappings;
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
+use crate::engine::sat::ClausalPropagator;
 use crate::munchkin_assert_simple;
 
 #[derive(Copy, Clone)]
@@ -43,10 +43,10 @@ impl DebugHelper {
     // missed a propagation or failure  additionally checks whether the internal data structures
     // of the clausal propagator are okay and consistent with the assignments_propositional
     pub(crate) fn debug_fixed_point_propagation(
-        clausal_propagator: &ClausalPropagatorType,
+        clausal_propagator: &ClausalPropagator,
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
-        clause_allocator: &ClauseAllocatorType,
+        clause_allocator: &ClauseAllocator,
         propagators_cp: &[Box<dyn Propagator>],
     ) -> bool {
         let mut assignments_integer_clone = assignments_integer.clone();
