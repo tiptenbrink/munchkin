@@ -46,29 +46,29 @@ impl<'a> SelectionContext<'a> {
     /// Returns the difference between the upper-bound and the lower-bound of the provided
     /// [`IntegerVariable`]. Note that this is different from the number of values which are in the
     /// domain of `var` since this calculation does not take into account holes in the domain.
-    pub fn get_size_of_domain<Var: IntegerVariable>(&self, var: Var) -> i32 {
+    pub fn get_size_of_domain<Var: IntegerVariable>(&self, var: &Var) -> i32 {
         var.upper_bound(self.assignments_integer) - var.lower_bound(self.assignments_integer)
     }
 
     /// Returns the lower bound of the provided [`IntegerVariable`]
-    pub fn lower_bound<Var: IntegerVariable>(&self, var: Var) -> i32 {
+    pub fn lower_bound<Var: IntegerVariable>(&self, var: &Var) -> i32 {
         var.lower_bound(self.assignments_integer)
     }
 
     /// Returns the upper bound of the provided [`IntegerVariable`]
-    pub fn upper_bound<Var: IntegerVariable>(&self, var: Var) -> i32 {
+    pub fn upper_bound<Var: IntegerVariable>(&self, var: &Var) -> i32 {
         var.upper_bound(self.assignments_integer)
     }
 
     /// Determines whether the provided value is in the domain of the provided [`IntegerVariable`]
-    pub fn contains<Var: IntegerVariable>(&self, var: Var, value: i32) -> bool {
+    pub fn contains<Var: IntegerVariable>(&self, var: &Var, value: i32) -> bool {
         var.contains(self.assignments_integer, value)
     }
 
     /// Determines whether the provided [`IntegerVariable`] has a unit domain (i.e. a domain of size
     /// 1)
-    pub fn is_integer_fixed<Var: IntegerVariable>(&self, var: Var) -> bool {
-        self.lower_bound(var.clone()) == self.upper_bound(var)
+    pub fn is_integer_fixed<Var: IntegerVariable>(&self, var: &Var) -> bool {
+        self.lower_bound(var) == self.upper_bound(var)
     }
 
     /// Determines whether the provided [`PropositionalVariable`] is assigned.
