@@ -12,7 +12,6 @@ use crate::branching::value_selection::ValueSelector;
 use crate::branching::variable_selection::VariableSelector;
 use crate::branching::Brancher;
 use crate::branching::PhaseSaving;
-use crate::branching::Vsids;
 use crate::constraints::ConstraintPoster;
 use crate::engine::cp::propagation::Propagator;
 use crate::engine::predicates::predicate::Predicate;
@@ -669,23 +668,3 @@ impl Solver {
         self.satisfaction_solver.add_propagator(propagator)
     }
 }
-
-/// Default brancher implementation
-impl Solver {
-    /// Creates a default [`IndependentVariableValueBrancher`] which uses [`Vsids`] as
-    /// [`VariableSelector`] and [`PhaseSaving`] as its [`ValueSelector`]; it searches over all
-    /// [`PropositionalVariable`]s defined in the provided `solver`.
-    pub fn default_brancher_over_all_propositional_variables(&self) -> DefaultBrancher {
-        self.satisfaction_solver
-            .default_brancher_over_all_propositional_variables()
-    }
-}
-
-/// The type of [`Brancher`] which is created by
-/// [`Solver::default_brancher_over_all_propositional_variables`]. It consists of the value selector
-/// [`Vsids`] in combination with a [`SolutionGuidedValueSelector`] with as backup [`PhaseSaving`].
-pub type DefaultBrancher = IndependentVariableValueBrancher<
-    PropositionalVariable,
-    Vsids<PropositionalVariable>,
-    PhaseSaving<PropositionalVariable, bool>,
->;
