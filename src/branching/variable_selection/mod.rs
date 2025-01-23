@@ -6,10 +6,8 @@
 //! [`Vsids`]. Any [`VariableSelector`] should only select variables which have a domain of size 2
 //! or larger.
 
-mod first_fail;
+mod input_order;
 mod variable_selector;
-mod vsids;
 
-pub use first_fail::*;
+pub use input_order::*;
 pub use variable_selector::VariableSelector;
-pub use vsids::*;
