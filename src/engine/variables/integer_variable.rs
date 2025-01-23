@@ -26,6 +26,11 @@ pub trait IntegerVariable:
     /// Determine whether the value is in the domain of this variable.
     fn contains(&self, assignment: &AssignmentsInteger, value: i32) -> bool;
 
+    /// Determine whether the variable is fixed, i.e. has only 1 element in the domain.
+    fn is_fixed(&self, assignment: &AssignmentsInteger) -> bool {
+        self.lower_bound(assignment) == self.upper_bound(assignment)
+    }
+
     /// Get a predicate description (bounds + holes) of the domain of this variable.
     /// N.B. can be very expensive with large domains, and very large with holey domains
     ///
