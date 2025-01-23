@@ -58,23 +58,16 @@ impl PropagatorInitialisationContext<'_> {
     ///
     /// Note that the [`LocalId`] is used to differentiate between [`DomainId`]s and
     /// [`AffineView`]s.
-    pub fn register<Var: IntegerVariable>(
-        &mut self,
-        var: Var,
-        domain_events: DomainEvents,
-        local_id: LocalId,
-    ) -> Var {
+    pub fn register<Var: IntegerVariable>(&mut self, var: Var, domain_events: DomainEvents) {
         let propagator_var = PropagatorVarId {
             propagator: self.propagator_id,
-            variable: local_id,
+            variable: self.next_local_id,
         };
 
-        self.next_local_id = self.next_local_id.max(LocalId::from(local_id.unpack() + 1));
+        self.next_local_id = LocalId::from(self.next_local_id.unpack() + 1);
 
         let mut watchers = Watchers::new(propagator_var, self.watch_list);
         var.watch_all(&mut watchers, domain_events.get_int_events());
-
-        var
     }
 
     pub fn register_literal(
