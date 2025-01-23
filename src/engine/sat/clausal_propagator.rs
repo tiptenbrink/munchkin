@@ -94,6 +94,7 @@ impl ClausalPropagator {
         Ok(())
     }
 
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn add_asserting_learned_clause(
         &mut self,
         literals: Vec<Literal>,

@@ -49,6 +49,7 @@ pub(crate) struct ConflictAnalysisContext<'a> {
 }
 
 impl ConflictAnalysisContext<'_> {
+    #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn enqueue_decision_literal(&mut self, decision_literal: Literal) {
         self.assignments_propositional
             .enqueue_decision_literal(decision_literal)
@@ -86,10 +87,7 @@ impl ConflictAnalysisContext<'_> {
             self.assignments_propositional.num_trail_entries(),
         );
         self.assignments_integer
-            .synchronise(
-                backtrack_level,
-                self.watch_list_cp.is_watching_any_backtrack_events(),
-            )
+            .synchronise(backtrack_level)
             .iter()
             .for_each(|(domain_id, previous_value)| {
                 self.brancher
@@ -131,6 +129,7 @@ impl ConflictAnalysisContext<'_> {
     ///
     /// Note that information about the reason for propagation of root literals is not properly
     /// kept, so asking about the reason for a root propagation will cause a panic.
+    #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn get_propagation_clause_reference(
         &mut self,
         propagated_literal: Literal,
@@ -175,6 +174,7 @@ impl ConflictAnalysisContext<'_> {
     /// constructed based on the explanation given by the propagator.
     ///
     /// Note that the solver will panic in case the solver is not in conflicting state.
+    #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn get_conflict_reason_clause_reference(&mut self) -> ClauseReference {
         match self.solver_state.get_conflict_info() {
             StoredConflictInfo::VirtualBinaryClause { lit1, lit2 } => self

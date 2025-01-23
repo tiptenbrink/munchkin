@@ -4,7 +4,6 @@
 use std::cmp::min;
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::marker::PhantomData;
 use std::time::Instant;
 
 use rand::rngs::SmallRng;
@@ -27,9 +26,7 @@ use crate::basic_types::Inconsistency;
 use crate::basic_types::PropagationStatusOneStepCP;
 use crate::basic_types::SolutionReference;
 use crate::basic_types::StoredConflictInfo;
-use crate::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
 use crate::branching::Brancher;
-use crate::branching::PhaseSaving;
 use crate::branching::SelectionContext;
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
 use crate::engine::cp::propagation::PropagationContextMut;
@@ -891,10 +888,7 @@ impl ConstraintSatisfactionSolver {
             self.assignments_propositional.num_trail_entries(),
         );
         self.assignments_integer
-            .synchronise(
-                backtrack_level,
-                self.watch_list_cp.is_watching_any_backtrack_events(),
-            )
+            .synchronise(backtrack_level)
             .iter()
             .for_each(|(domain_id, previous_value)| {
                 brancher.on_unassign_integer(*domain_id, *previous_value)

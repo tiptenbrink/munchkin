@@ -11,7 +11,6 @@ pub(crate) struct WatchListCP {
                                               * watch domain changes of the i-th integer
                                               * variable */
     is_watching_anything: bool,
-    is_watching_any_backtrack_events: bool,
 }
 
 #[derive(Debug)]
@@ -45,10 +44,6 @@ impl WatchListCP {
         self.is_watching_anything
     }
 
-    pub(crate) fn is_watching_any_backtrack_events(&self) -> bool {
-        self.is_watching_any_backtrack_events
-    }
-
     pub(crate) fn get_affected_propagators(
         &self,
         event: IntDomainEvent,
@@ -61,21 +56,6 @@ impl WatchListCP {
             IntDomainEvent::LowerBound => &watcher.forward_watcher.lower_bound_watchers,
             IntDomainEvent::UpperBound => &watcher.forward_watcher.upper_bound_watchers,
             IntDomainEvent::Removal => &watcher.forward_watcher.removal_watchers,
-        }
-    }
-
-    pub(crate) fn get_backtrack_affected_propagators(
-        &self,
-        event: IntDomainEvent,
-        domain: DomainId,
-    ) -> &[PropagatorVarId] {
-        let watcher = &self.watchers[domain];
-
-        match event {
-            IntDomainEvent::Assign => &watcher.backtrack_watcher.assign_watchers,
-            IntDomainEvent::LowerBound => &watcher.backtrack_watcher.lower_bound_watchers,
-            IntDomainEvent::UpperBound => &watcher.backtrack_watcher.upper_bound_watchers,
-            IntDomainEvent::Removal => &watcher.backtrack_watcher.removal_watchers,
         }
     }
 }
@@ -109,9 +89,7 @@ impl<'a> Watchers<'a> {
 
 #[derive(Default, Debug)]
 struct WatcherCP {
-    // FIXME measure performance of these vectors, they are treated as sets
     forward_watcher: Watcher,
-    backtrack_watcher: Watcher,
 }
 
 #[derive(Debug, Default)]

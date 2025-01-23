@@ -135,6 +135,7 @@ mod private {
     }
 }
 
+#[allow(unused, reason = "could be used in an assignment")]
 pub(crate) trait ReadDomains: HasAssignments {
     fn is_literal_fixed(&self, var: Literal) -> bool {
         self.assignments_propositional().is_literal_assigned(var)

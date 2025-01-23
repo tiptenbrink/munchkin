@@ -10,6 +10,7 @@ pub(crate) struct VariableNames {
 
 impl VariableNames {
     /// Get the name associated with a propositional variable.
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn get_propositional_name(
         &self,
         propositional: PropositionalVariable,
@@ -18,6 +19,7 @@ impl VariableNames {
     }
 
     /// Get the name associated with a domain id.
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn get_int_name(&self, domain_id: DomainId) -> Option<&str> {
         self.integers.get(&domain_id).map(|s| s.as_str())
     }

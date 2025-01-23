@@ -43,6 +43,7 @@ impl Debug for BoxedPropagator {
     }
 }
 
+#[allow(unused, reason = "can be used in an assignment")]
 impl TestSolver {
     pub(crate) fn new_variable(&mut self, lb: i32, ub: i32) -> DomainId {
         self.watch_list.grow();

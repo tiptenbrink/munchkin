@@ -9,6 +9,7 @@ pub(crate) struct ExplanationClauseManager {
 }
 
 impl ExplanationClauseManager {
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn is_empty(&self) -> bool {
         self.explanation_clauses.is_empty()
     }
@@ -26,6 +27,7 @@ impl ExplanationClauseManager {
         clause_reference
     }
 
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn clean_up_explanation_clauses(&mut self, clause_allocator: &mut ClauseAllocator) {
         // the idea is to delete clauses in reverse order
         //  so that in the future, when we implement manual memory management, we can simply skip

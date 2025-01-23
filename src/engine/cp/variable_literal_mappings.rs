@@ -366,20 +366,13 @@ impl VariableLiteralMappings {
             &mut self.literal_to_predicates,
         );
     }
-
-    /// Get integer predicates for a literal.
-    pub(crate) fn get_predicates(
-        &self,
-        literal: Literal,
-    ) -> impl Iterator<Item = IntegerPredicate> + '_ {
-        self.literal_to_predicates[literal].iter().copied()
-    }
 }
 
 // methods for getting simple information on the interface of SAT and CP
 impl VariableLiteralMappings {
     /// Returns the [`DomainId`] of the first [`IntegerPredicate`] which the provided `literal` is
     /// linked to or [`None`] if no such [`DomainId`] exists.
+    #[allow(unused, reason = "can be used in assignment")]
     pub(crate) fn get_domain_literal(&self, literal: Literal) -> Option<DomainId> {
         self.literal_to_predicates[literal]
             .first()

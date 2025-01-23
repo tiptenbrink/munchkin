@@ -1,3 +1,5 @@
+#![allow(unused, reason = "this file is a skeleton for the assignment")]
+
 use crate::basic_types::PropagationStatusCP;
 use crate::engine::cp::propagation::PropagationContextMut;
 use crate::engine::cp::propagation::Propagator;

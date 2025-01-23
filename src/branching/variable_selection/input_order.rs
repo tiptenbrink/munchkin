@@ -2,7 +2,6 @@ use log::warn;
 
 use crate::branching::SelectionContext;
 use crate::branching::VariableSelector;
-use crate::engine::variables::DomainId;
 use crate::engine::variables::PropositionalVariable;
 use crate::variables::IntegerVariable;
 

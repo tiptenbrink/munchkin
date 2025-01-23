@@ -3,6 +3,7 @@ use crate::constraints;
 use crate::predicate;
 use crate::propagators::element::ElementPropagator;
 use crate::variables::IntegerVariable;
+use crate::variables::Literal;
 use crate::ConstraintOperationError;
 use crate::Solver;
 
@@ -53,11 +54,7 @@ where
         Ok(())
     }
 
-    fn implied_by(
-        self,
-        solver: &mut Solver,
-        reification_literal: crate::variables::Literal,
-    ) -> Result<(), ConstraintOperationError> {
+    fn implied_by(self, _: &mut Solver, _: Literal) -> Result<(), ConstraintOperationError> {
         todo!("half-reification of element encoding")
     }
 }

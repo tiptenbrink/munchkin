@@ -3,6 +3,7 @@ use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
 
 #[allow(clippy::len_without_is_empty)] // The clause will always have at least two literals.
+#[allow(unused, reason = "can be used in assignment")]
 #[derive(Debug)]
 pub(crate) struct Clause {
     literals: Vec<Literal>,

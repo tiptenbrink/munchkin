@@ -1,7 +1,6 @@
 use crate::engine::cp::propagation::propagation_context::HasAssignments;
 use crate::engine::cp::AssignmentsInteger;
 use crate::engine::sat::AssignmentsPropositional;
-use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::munchkin_assert_moderate;

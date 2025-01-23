@@ -5,13 +5,11 @@ use crate::basic_types::CSPSolverExecutionFlag;
 use crate::basic_types::ConstraintOperationError;
 use crate::basic_types::HashSet;
 use crate::basic_types::Solution;
-use crate::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
 #[cfg(doc)]
 use crate::branching::value_selection::ValueSelector;
 #[cfg(doc)]
 use crate::branching::variable_selection::VariableSelector;
 use crate::branching::Brancher;
-use crate::branching::PhaseSaving;
 use crate::constraints::ConstraintPoster;
 use crate::engine::cp::propagation::Propagator;
 use crate::engine::predicates::predicate::Predicate;
@@ -26,7 +24,6 @@ use crate::results::solution_iterator::SolutionIterator;
 use crate::results::unsatisfiable::UnsatisfiableUnderAssumptions;
 use crate::statistics::log_statistic;
 use crate::statistics::log_statistic_postfix;
-use crate::variables::PropositionalVariable;
 
 /// The main interaction point which allows the creation of variables, the addition of constraints,
 /// and solving problems.

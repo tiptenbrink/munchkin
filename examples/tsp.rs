@@ -121,7 +121,7 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
     fn get_search(
         &self,
         strategy: SearchStrategies,
-        solver: &Solver,
+        _: &Solver,
         variables: &VariableMap,
     ) -> impl Brancher + 'static {
         match strategy {

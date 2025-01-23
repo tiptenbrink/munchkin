@@ -162,6 +162,6 @@ pub fn solve<SearchStrategies>(
     Ok(())
 }
 
-pub fn verify(model: Model, proof_path: PathBuf) -> anyhow::Result<()> {
+pub fn verify(_model: Model, _proof_path: PathBuf) -> anyhow::Result<()> {
     todo!()
 }
