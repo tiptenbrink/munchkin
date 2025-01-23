@@ -10,13 +10,13 @@ use crate::predicate;
 #[derive(Debug, Copy, Clone)]
 pub struct InDomainMin;
 
-impl<Var: IntegerVariable + Copy> ValueSelector<Var> for InDomainMin {
+impl<Var: IntegerVariable> ValueSelector<Var> for InDomainMin {
     fn select_value(
         &mut self,
         context: &mut SelectionContext,
         decision_variable: Var,
     ) -> Predicate {
-        predicate!(decision_variable <= context.lower_bound(decision_variable))
+        predicate!(decision_variable <= context.lower_bound(&decision_variable))
     }
 }
 

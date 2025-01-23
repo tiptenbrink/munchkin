@@ -5,6 +5,7 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::munchkin_assert_moderate;
+use crate::variables::IntegerVariable;
 
 /// A trait which specifies the common behaviours of [`Solution`] and [`SolutionReference`].
 pub trait ProblemSolution: HasAssignments {
@@ -45,12 +46,13 @@ pub trait ProblemSolution: HasAssignments {
     }
 
     /// Returns the assigned integer value of the provided [`DomainId`].
-    fn get_integer_value(&self, domain: DomainId) -> i32 {
+    fn get_integer_value(&self, variable: impl IntegerVariable) -> i32 {
         munchkin_assert_moderate!(
-            self.assignments_integer().is_domain_assigned(domain),
+            variable.is_fixed(self.assignments_integer()),
             "Expected retrieved integer variable from solution to be assigned"
         );
-        self.assignments_integer().get_assigned_value(domain)
+
+        variable.lower_bound(self.assignments_integer())
     }
 }
 

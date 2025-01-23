@@ -1,4 +1,7 @@
 use clap::Parser;
+use munchkin::branching::branchers::independent_variable_value_brancher::IndependentVariableValueBrancher;
+use munchkin::branching::InDomainMin;
+use munchkin::branching::InputOrder;
 use munchkin::results::ProblemSolution;
 use munchkin::results::SatisfactionResult;
 use munchkin::termination::Indefinite;
@@ -49,7 +52,9 @@ fn main() {
     //     .add_constraint(...)
     //     .post();
 
-    let mut brancher = solver.default_brancher_over_all_propositional_variables();
+    let mut brancher =
+        IndependentVariableValueBrancher::new(InputOrder::new(variables.clone()), InDomainMin);
+
     match solver.satisfy(&mut brancher, &mut Indefinite) {
         SatisfactionResult::Satisfiable(solution) => {
             let row_separator = format!("{}+", "+---".repeat(n as usize));
