@@ -31,7 +31,6 @@ use crate::branching::branchers::independent_variable_value_brancher::Independen
 use crate::branching::Brancher;
 use crate::branching::PhaseSaving;
 use crate::branching::SelectionContext;
-use crate::branching::Vsids;
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
 use crate::engine::cp::propagation::PropagationContextMut;
 use crate::engine::cp::propagation::Propagator;
@@ -59,7 +58,6 @@ use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_extreme;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
-use crate::DefaultBrancher;
 #[cfg(doc)]
 use crate::Solver;
 
@@ -378,19 +376,6 @@ impl ConstraintSatisfactionSolver {
         result
     }
 
-    pub fn default_brancher_over_all_propositional_variables(&self) -> DefaultBrancher {
-        let variables = self
-            .get_propositional_assignments()
-            .get_propositional_variables()
-            .collect::<Vec<_>>();
-
-        IndependentVariableValueBrancher {
-            variable_selector: Vsids::new(&variables),
-            value_selector: PhaseSaving::new(&variables),
-            variable_type: PhantomData,
-        }
-    }
-
     pub fn log_statistics(&self) {
         self.counters.log_statistics()
     }
@@ -679,7 +664,7 @@ impl ConstraintSatisfactionSolver {
 }
 
 // methods that serve as the main building blocks
-impl<> ConstraintSatisfactionSolver {
+impl ConstraintSatisfactionSolver {
     fn initialise(&mut self, assumptions: &[Literal]) {
         munchkin_assert_simple!(
             !self.state.is_infeasible_under_assumptions(),
@@ -1066,7 +1051,7 @@ impl<> ConstraintSatisfactionSolver {
 }
 
 // methods for adding constraints (propagators and clauses)
-impl<> ConstraintSatisfactionSolver {
+impl ConstraintSatisfactionSolver {
     /// Add a clause (of at least length 2) which could later be deleted. Be mindful of the effect
     /// of this on learned clauses etc. if a solve call were to be invoked after adding a clause
     /// through this function.

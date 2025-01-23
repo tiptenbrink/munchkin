@@ -295,6 +295,8 @@ use crate::termination::TerminationCondition;
 
 pub mod branching;
 pub mod constraints;
+pub mod model;
+pub mod runner;
 
 // We declare a private module with public use, so that all exports from API are exports directly
 // from the crate.
@@ -307,7 +309,6 @@ mod api;
 
 pub use api::*;
 
-pub use crate::api::solver::DefaultBrancher;
 pub use crate::api::solver::Solver;
 pub use crate::basic_types::ConstraintOperationError;
 pub use crate::basic_types::Random;
