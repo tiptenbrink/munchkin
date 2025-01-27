@@ -27,7 +27,9 @@ use munchkin::branching::InDomainMin;
 use munchkin::branching::InputOrder;
 use munchkin::model::Constraint;
 use munchkin::model::IntVariable;
+use munchkin::model::IntVariableArray;
 use munchkin::model::Model;
+use munchkin::model::Output;
 use munchkin::model::VariableMap;
 use munchkin::runner::Problem;
 use munchkin::Solver;
@@ -44,10 +46,10 @@ enum SearchStrategies {
 }
 
 struct TravellingSalesperson {
-    successors: Vec<IntVariable>,
+    successors: IntVariableArray,
     /// For every node, there is a variable for the cost of leaving that node to go to its
     /// successor.
-    outgoing_costs: Vec<IntVariable>,
+    outgoing_costs: IntVariableArray,
     /// The total cost of the tour.
     objective: IntVariable,
 }
@@ -58,49 +60,43 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
 
         let (n, dist) = extract_data(&data)?;
 
-        let successors: Vec<_> = (0..n)
-            .map(|i| model.new_interval_variable(format!("Succ[{i}]"), 0, n - 1))
-            .collect();
+        let successors = model.new_interval_variable_array("Successor", 0, n - 1, n as usize);
+        let successors_array: Vec<_> = successors.as_array(&model).collect();
 
-        model.add_constraint(Constraint::Circuit(successors.clone()));
+        model.add_constraint(Constraint::Circuit(successors.as_array(&model).collect()));
 
         // The upper bound for the objective variable is a very lax upper bound, as it
         // is a summation over all elements in the distance matrix.
         let max_objective = iterate(dist).sum();
         let objective = model.new_interval_variable("Objective", 0, max_objective);
 
-        let outgoing_costs: Vec<_> = successors
+        let outgoing_costs = model.new_interval_variable_array(
+            "_OutgoingCost",
+            0,
+            iterate(dist).max().unwrap(),
+            n as usize,
+        );
+        let outgoing_costs_array: Vec<_> = outgoing_costs.as_array(&model).collect();
+
+        successors_array
             .iter()
             .enumerate()
-            .map(|(node, successor)| {
+            .for_each(|(node, successor)| {
                 // The costs of going from `node` to any of the other nodes.
                 let distances_from_node = slice_row(dist, node);
-
-                let min_distance: i32 = distances_from_node.iter().min().copied().unwrap();
-                let max_distance: i32 = distances_from_node.iter().max().copied().unwrap();
-
-                // The cost of the edge leaving `node`.
-                let outgoing_cost = model.new_interval_variable(
-                    format!("OutgoingCost[{node}]"),
-                    min_distance,
-                    max_distance,
-                );
 
                 // Constrain the `outgoing_cost` to be the distance between `node` and its
                 // successor.
                 model.add_constraint(Constraint::Element {
                     array: distances_from_node,
                     index: *successor,
-                    rhs: outgoing_cost,
+                    rhs: outgoing_costs_array[node],
                 });
-
-                outgoing_cost
-            })
-            .collect();
+            });
 
         // `\sum outgoing_costs = objective` <-> `\sum {outgoing_costs} - objective = 0`
         model.add_constraint(Constraint::LinearEqual {
-            terms: outgoing_costs
+            terms: outgoing_costs_array
                 .iter()
                 .copied()
                 .chain(std::iter::once(objective.scaled(-1)))
@@ -126,22 +122,19 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
     ) -> impl Brancher + 'static {
         match strategy {
             SearchStrategies::Default => IndependentVariableValueBrancher::new(
-                InputOrder::new(
-                    variables
-                        .to_solver_variables(self.successors.clone())
-                        .collect(),
-                ),
+                InputOrder::new(variables.get_array(self.successors)),
                 InDomainMin,
             ),
         }
     }
 
-    fn get_output_variables(&self) -> impl Iterator<Item = IntVariable> + '_ {
-        self.successors
-            .iter()
-            .copied()
-            .chain(self.outgoing_costs.iter().copied())
-            .chain([self.objective])
+    fn get_output_variables(&self) -> impl Iterator<Item = Output> + '_ {
+        [
+            Output::Array(self.successors),
+            Output::Array(self.outgoing_costs),
+            Output::Variable(self.objective),
+        ]
+        .into_iter()
     }
 }
 

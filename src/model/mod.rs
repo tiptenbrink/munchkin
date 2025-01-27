@@ -1,3 +1,6 @@
+use std::fmt::Display;
+use std::ops::Range;
+
 use clap::ValueEnum;
 
 use crate::constraints;
@@ -5,6 +8,7 @@ use crate::options::SolverOptions;
 use crate::variables::AffineView;
 use crate::variables::DomainId;
 use crate::variables::TransformableVariable;
+use crate::ConstraintOperationError;
 use crate::Solver;
 
 /// Builds up the model, from which a solver can be constructed.
@@ -12,6 +16,8 @@ use crate::Solver;
 pub struct Model {
     /// Every element denotes the bounds of the variable.
     variables: Vec<(String, i32, i32)>,
+    /// Arrays of variables.
+    arrays: Vec<(String, Range<usize>)>,
     /// The constraints in the model.
     constraints: Vec<Constraint>,
 }
@@ -20,7 +26,7 @@ impl Model {
     /// Create a new interval variable.
     pub fn new_interval_variable(
         &mut self,
-        name: impl ToString,
+        name: impl Display,
         lower_bound: i32,
         upper_bound: i32,
     ) -> IntVariable {
@@ -34,6 +40,28 @@ impl Model {
             offset: 0,
             id,
         }
+    }
+
+    /// Create a new array of interval variables.
+    pub fn new_interval_variable_array(
+        &mut self,
+        name: impl Display,
+        lower_bound: i32,
+        upper_bound: i32,
+        len: usize,
+    ) -> IntVariableArray {
+        let id = self.arrays.len();
+
+        let start = self.variables.len();
+        (0..len).for_each(|i| {
+            let _ = self.new_interval_variable(format!("{name}[{i}]"), lower_bound, upper_bound);
+        });
+
+        let end = self.variables.len();
+
+        self.arrays.push((name.to_string(), start..end));
+
+        IntVariableArray(id)
     }
 
     /// Add a constraint to the model.
@@ -52,7 +80,7 @@ impl Model {
     ) -> (Solver, VariableMap) {
         let mut solver = Solver::with_options(solver_options);
 
-        let solver_variables: VariableMap = self
+        let (variables, names): (Vec<_>, Vec<_>) = self
             .variables
             .into_iter()
             .map(|(name, lower_bound, upper_bound)| {
@@ -65,64 +93,111 @@ impl Model {
                     name,
                 )
             })
-            .collect();
+            .unzip();
 
-        let to_solver_variable =
-            |int_var: IntVariable| solver_variables.to_solver_variable(int_var);
+        let solver_variables = VariableMap {
+            variables,
+            names,
+            arrays: self.arrays,
+        };
 
-        for constraint in self.constraints {
-            match constraint {
-                Constraint::Circuit(variables) if use_global_propagator(Globals::Circuit) => {
-                    let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
-
-                    let _ = solver
-                        .add_constraint(constraints::circuit(variables))
-                        .post();
-                }
-                Constraint::Circuit(variables) => {
-                    let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
-
-                    let _ = solver
-                        .add_constraint(constraints::circuit_decomposed(
-                            variables,
-                            !use_global_propagator(Globals::AllDifferent),
-                            !use_global_propagator(Globals::Element),
-                        ))
-                        .post();
-                }
-                Constraint::Element { array, index, rhs } => {
-                    let index = to_solver_variable(index);
-                    let rhs = to_solver_variable(rhs);
-
-                    let array: Vec<_> = array
-                        .into_iter()
-                        .map(|element| {
-                            AffineView::from(solver.new_bounded_integer(element, element))
-                        })
-                        .collect();
-
-                    if use_global_propagator(Globals::Element) {
-                        let _ = solver
-                            .add_constraint(constraints::element(index, array, rhs))
-                            .post();
-                    } else {
-                        let _ = solver
-                            .add_constraint(constraints::element_decomposition(index, array, rhs))
-                            .post();
-                    }
-                }
-                Constraint::LinearEqual { terms, rhs } => {
-                    let terms: Vec<_> = terms.into_iter().map(to_solver_variable).collect();
-
-                    let _ = solver
-                        .add_constraint(constraints::equals(terms, rhs))
-                        .post();
-                }
-            }
-        }
+        let _ = add_constraints(
+            self.constraints,
+            &solver_variables,
+            use_global_propagator,
+            &mut solver,
+        );
 
         (solver, solver_variables)
     }
+}
+
+fn add_constraints(
+    constraints: Vec<Constraint>,
+    solver_variables: &VariableMap,
+    use_global_propagator: impl Fn(Globals) -> bool,
+    solver: &mut Solver,
+) -> Result<(), ConstraintOperationError> {
+    let to_solver_variable = |int_var: IntVariable| solver_variables.to_solver_variable(int_var);
+
+    for constraint in constraints {
+        match constraint {
+            Constraint::Circuit(variables) if use_global_propagator(Globals::Circuit) => {
+                let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
+
+                solver
+                    .add_constraint(constraints::circuit(variables))
+                    .post()?;
+            }
+            Constraint::Circuit(variables) => {
+                let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
+
+                solver
+                    .add_constraint(constraints::circuit_decomposed(
+                        variables,
+                        !use_global_propagator(Globals::AllDifferent),
+                        !use_global_propagator(Globals::Element),
+                    ))
+                    .post()?;
+            }
+            Constraint::Element { array, index, rhs } => {
+                let index = to_solver_variable(index);
+                let rhs = to_solver_variable(rhs);
+
+                let array: Vec<_> = array
+                    .into_iter()
+                    .map(|element| AffineView::from(solver.new_bounded_integer(element, element)))
+                    .collect();
+
+                if use_global_propagator(Globals::Element) {
+                    solver
+                        .add_constraint(constraints::element(index, array, rhs))
+                        .post()?;
+                } else {
+                    solver
+                        .add_constraint(constraints::element_decomposition(index, array, rhs))
+                        .post()?;
+                }
+            }
+            Constraint::LinearEqual { terms, rhs } => {
+                let terms: Vec<_> = terms.into_iter().map(to_solver_variable).collect();
+
+                solver
+                    .add_constraint(constraints::equals(terms, rhs))
+                    .post()?;
+            }
+            Constraint::Cumulative {
+                start_times,
+                durations,
+                resource_requirements,
+                resource_capacity,
+            } => {
+                let start_times: Vec<_> = start_times.into_iter().map(to_solver_variable).collect();
+
+                if use_global_propagator(Globals::Cumulative) {
+                    solver
+                        .add_constraint(constraints::cumulative(
+                            start_times,
+                            &durations,
+                            &resource_requirements,
+                            resource_capacity,
+                        ))
+                        .post()?;
+                } else {
+                    solver
+                        .add_constraint(constraints::cumulative_decomposition(
+                            start_times.to_vec(),
+                            durations,
+                            resource_requirements,
+                            resource_capacity,
+                        ))
+                        .post()?;
+                }
+            }
+        }
+    }
+
+    Ok(())
 }
 
 /// The constraints which can be used in [`Model`].
@@ -137,6 +212,12 @@ pub enum Constraint {
     LinearEqual {
         terms: Vec<IntVariable>,
         rhs: i32,
+    },
+    Cumulative {
+        start_times: Vec<IntVariable>,
+        durations: Vec<u32>,
+        resource_requirements: Vec<u32>,
+        resource_capacity: u32,
     },
 }
 
@@ -160,19 +241,40 @@ impl IntVariable {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct VariableMap(Vec<AffineView<DomainId>>, Vec<String>);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct IntVariableArray(usize);
 
-impl FromIterator<(AffineView<DomainId>, String)> for VariableMap {
-    fn from_iter<T: IntoIterator<Item = (AffineView<DomainId>, String)>>(iter: T) -> Self {
-        let (variables, names) = iter.into_iter().unzip();
-        VariableMap(variables, names)
+impl IntVariableArray {
+    pub fn as_array<'model>(
+        &self,
+        model: &'model Model,
+    ) -> impl Iterator<Item = IntVariable> + 'model {
+        let (_, range) = &model.arrays[self.0];
+
+        (range.start..range.end).map(|id| IntVariable {
+            scale: 1,
+            offset: 0,
+            id,
+        })
     }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum Output {
+    Variable(IntVariable),
+    Array(IntVariableArray),
+}
+
+#[derive(Clone, Debug)]
+pub struct VariableMap {
+    variables: Vec<AffineView<DomainId>>,
+    names: Vec<String>,
+    arrays: Vec<(String, Range<usize>)>,
 }
 
 impl VariableMap {
     pub fn to_solver_variable(&self, int_var: IntVariable) -> AffineView<DomainId> {
-        self.0[int_var.id]
+        self.variables[int_var.id]
             .scaled(int_var.scale)
             .offset(int_var.offset)
     }
@@ -187,22 +289,36 @@ impl VariableMap {
         int_vars.into_iter().map(|var| self.to_solver_variable(var))
     }
 
-    pub fn get_name(&self, int_var: IntVariable) -> String {
-        let mut domain_name = self.1[int_var.id].clone();
+    pub fn get_name(&self, output: Output) -> String {
+        match output {
+            Output::Variable(int_var) => {
+                let mut domain_name = self.names[int_var.id].clone();
 
-        if int_var.scale != 1 {
-            domain_name = format!("{} * {}", int_var.scale, domain_name);
+                if int_var.scale != 1 {
+                    domain_name = format!("{} * {}", int_var.scale, domain_name);
+                }
+
+                if int_var.offset < 0 {
+                    domain_name = format!("{} - {}", domain_name, -int_var.offset);
+                }
+
+                if int_var.offset > 0 {
+                    domain_name = format!("{} + {}", domain_name, int_var.offset);
+                }
+
+                domain_name
+            }
+
+            Output::Array(int_variable_array) => self.arrays[int_variable_array.0].0.clone(),
         }
+    }
 
-        if int_var.offset < 0 {
-            domain_name = format!("{} - {}", domain_name, -int_var.offset);
-        }
+    pub fn get_array(&self, array: IntVariableArray) -> Vec<AffineView<DomainId>> {
+        let (_, range) = &self.arrays[array.0];
 
-        if int_var.offset > 0 {
-            domain_name = format!("{} + {}", domain_name, int_var.offset);
-        }
-
-        domain_name
+        (range.start..range.end)
+            .map(|idx| self.variables[idx].clone())
+            .collect()
     }
 }
 
@@ -211,4 +327,5 @@ pub enum Globals {
     Circuit,
     Element,
     AllDifferent,
+    Cumulative,
 }

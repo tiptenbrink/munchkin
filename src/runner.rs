@@ -6,12 +6,14 @@ use clap::ValueEnum;
 
 use crate::branching::Brancher;
 use crate::model::Globals;
-use crate::model::IntVariable;
 use crate::model::Model;
+use crate::model::Output;
 use crate::model::VariableMap;
 use crate::options::SolverOptions;
+use crate::results::solution_iterator::IteratedSolution;
 use crate::results::ProblemSolution;
-use crate::results::SatisfactionResult;
+use crate::results::SolutionReference;
+use crate::statistics::configure;
 use crate::termination::TimeBudget;
 use crate::Solver;
 
@@ -71,7 +73,7 @@ pub trait Problem<SearchStrategies>: Sized {
         solver_variables: &VariableMap,
     ) -> impl Brancher + 'static;
 
-    fn get_output_variables(&self) -> impl Iterator<Item = IntVariable> + '_;
+    fn get_output_variables(&self) -> impl Iterator<Item = Output> + '_;
 }
 
 #[macro_export]
@@ -92,6 +94,8 @@ where
     use clap::Parser;
 
     let args = Cli::<SearchStrategies>::parse();
+
+    configure(true, "%% ", None);
 
     let data = std::fs::read_to_string(&args.instance)
         .with_context(|| format!("Error reading {}", args.instance.display()))?;
@@ -135,31 +139,66 @@ pub fn solve<SearchStrategies>(
     );
 
     let mut brancher = instance.get_search(search_strategy, &solver, &solver_variables);
+    let mut time_budget = TimeBudget::starting_now(time_out);
 
-    let result = solver.satisfy(&mut brancher, &mut TimeBudget::starting_now(time_out));
+    let mut iterator = solver.get_solution_iterator(&mut brancher, &mut time_budget);
 
-    match result {
-        SatisfactionResult::Satisfiable(solution) => {
-            println!("SATISFIABLE");
+    loop {
+        let next_solution = iterator.next_solution();
 
-            let variables = instance.get_output_variables();
+        match next_solution {
+            IteratedSolution::Solution(solution) => {
+                let outputs = instance.get_output_variables();
 
-            for model_variable in variables {
-                let solver_variable = solver_variables.to_solver_variable(model_variable);
+                for output in outputs {
+                    print_output(output, &solver_variables, solution);
+                }
 
-                let name = solver_variables.get_name(model_variable);
-
-                println!(
-                    "{name} = {}",
-                    solution.get_integer_value(solver_variable.clone())
-                );
+                println!("----------");
+            }
+            IteratedSolution::Finished => break,
+            IteratedSolution::Unknown => {
+                println!("UNKNOWN");
+                break;
+            }
+            IteratedSolution::Unsatisfiable => {
+                println!("UNSATISFIABLE");
+                break;
             }
         }
-        SatisfactionResult::Unsatisfiable => println!("UNSATISFIABLE"),
-        SatisfactionResult::Unknown => println!("UNKNOWN"),
     }
 
     Ok(())
+}
+
+fn print_output(output: Output, solver_variables: &VariableMap, solution: SolutionReference<'_>) {
+    let name = solver_variables.get_name(output);
+
+    match output {
+        Output::Variable(variable) => {
+            let solver_variable = solver_variables.to_solver_variable(variable);
+
+            println!(
+                "{name} = {};",
+                solution.get_integer_value(solver_variable.clone())
+            );
+        }
+
+        Output::Array(int_variable_array) => {
+            let solver_variables = solver_variables.get_array(int_variable_array);
+            let num_variables = solver_variables.len();
+
+            print!("{name} = [");
+            for (idx, variable) in solver_variables.into_iter().enumerate() {
+                print!("{}", solution.get_integer_value(variable));
+
+                if idx < num_variables - 1 {
+                    print!(", ");
+                }
+            }
+            println!("];");
+        }
+    }
 }
 
 pub fn verify(_model: Model, _proof_path: PathBuf) -> anyhow::Result<()> {
