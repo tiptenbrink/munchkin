@@ -50,61 +50,30 @@ impl Constraint for DecomposedCircuit {
             use_element_encoding,
         } = self;
 
-        // Offset all successors by -1, as the input is 1-indexed but the encoding is based on
-        // 0-indexed successors.
-        let successors: Vec<_> = successors
-            .iter()
-            .map(|successor| successor.offset(-1))
-            .collect();
-
         let min = successors
             .iter()
             .map(|var| solver.lower_bound(var))
             .min()
             .unwrap();
-        assert_eq!(0, min);
+        assert_eq!(1, min);
 
         let max = successors
             .iter()
             .map(|var| solver.upper_bound(var))
             .max()
             .unwrap();
-        assert_eq!(i32::try_from(successors.len() - 1).unwrap(), max);
+        assert_eq!(i32::try_from(successors.len()).unwrap(), max);
 
-        let order: Box<[_]> = (0..=max)
+        let order: Box<[_]> = (0..max)
             .map(|i| {
-                let ub = if i == 0 { 0 } else { max };
+                let ub = if i == 0 { 1 } else { max };
 
-                AffineView::from(solver.new_bounded_integer(0, ub))
+                AffineView::from(solver.new_bounded_integer(1, ub))
             })
             .collect();
 
-        if use_all_different_decomposition {
-            solver
-                .add_constraint(constraints::all_different_decomposition(successors.clone()))
-                .post()?;
-            solver
-                .add_constraint(constraints::all_different_decomposition(order.clone()))
-                .post()?;
-        } else {
-            solver
-                .add_constraint(constraints::all_different(successors.clone()))
-                .post()?;
-            solver
-                .add_constraint(constraints::all_different(order.clone()))
-                .post()?;
-        }
-
-        for (idx, var) in successors.iter().enumerate() {
-            let idx: i32 = idx.try_into().unwrap();
-
-            solver
-                .add_constraint(constraints::not_equals([var.clone()], idx))
-                .post()?;
-        }
-
         for (i, successor) in successors.iter().enumerate() {
-            let succ_order = solver.new_bounded_integer(0, max);
+            let succ_order = solver.new_bounded_integer(1, max);
 
             if use_element_encoding {
                 solver
@@ -127,7 +96,7 @@ impl Constraint for DecomposedCircuit {
             let order_i_eq_max = solver.get_literal(predicate![order[i] == max]);
 
             solver
-                .add_constraint(constraints::equals([succ_order], 0))
+                .add_constraint(constraints::equals([succ_order], 1))
                 .implied_by(order_i_eq_max)?;
             solver
                 .add_constraint(constraints::equals(
@@ -135,6 +104,30 @@ impl Constraint for DecomposedCircuit {
                     1,
                 ))
                 .implied_by(!order_i_eq_max)?;
+        }
+
+        if use_all_different_decomposition {
+            solver
+                .add_constraint(constraints::all_different_decomposition(successors.clone()))
+                .post()?;
+            solver
+                .add_constraint(constraints::all_different_decomposition(order.clone()))
+                .post()?;
+        } else {
+            solver
+                .add_constraint(constraints::all_different(successors.clone()))
+                .post()?;
+            solver
+                .add_constraint(constraints::all_different(order.clone()))
+                .post()?;
+        }
+
+        for (idx, var) in successors.iter().enumerate() {
+            let idx: i32 = idx.try_into().unwrap();
+
+            solver
+                .add_constraint(constraints::not_equals([var.clone()], idx + 1))
+                .post()?;
         }
 
         Ok(())
