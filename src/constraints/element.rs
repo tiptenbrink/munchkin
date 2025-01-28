@@ -13,7 +13,7 @@ pub fn element<ElementVar: IntegerVariable + 'static>(
     array: impl Into<Box<[ElementVar]>>,
     rhs: impl IntegerVariable + 'static,
 ) -> impl Constraint {
-    ElementPropagator::new(index, array.into(), rhs)
+    ElementPropagator::new(index.offset(-1), array.into(), rhs)
 }
 
 pub fn element_decomposition<ElementVar: IntegerVariable + 'static>(
@@ -40,8 +40,11 @@ where
     ArrayVar: IntegerVariable + 'static,
 {
     fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+        // Index is 1-indexed, but the implementation is 0-indexed.
+        let index = self.index.offset(-1);
+
         for (i, array_element) in self.array.iter().enumerate() {
-            let idx_eq_i = solver.get_literal(predicate![self.index == i as i32]);
+            let idx_eq_i = solver.get_literal(predicate![index == i as i32]);
 
             solver
                 .add_constraint(constraints::binary_equals(

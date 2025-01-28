@@ -63,9 +63,14 @@ impl<Var: IntegerVariable + 'static> Constraint for CumulativeDecomposition<Var>
             let mut usages = vec![];
 
             for task in 0..self.start_times.len() {
+                let resource_requirement = self.resource_requirements[task] as i32;
+                if resource_requirement == 0 {
+                    continue;
+                }
+
                 let is_active_at_timepoint = solver.new_literal();
-                let usage_of_task_at_current_timepoint = solver
-                    .new_sparse_integer([0, self.resource_requirements[task].try_into().unwrap()]);
+                let usage_of_task_at_current_timepoint =
+                    solver.new_sparse_integer([0, resource_requirement]);
 
                 // If the timepoint starts after or ends before `timepoint`, the resource usage
                 // will be 0.
@@ -96,21 +101,23 @@ impl<Var: IntegerVariable + 'static> Constraint for CumulativeDecomposition<Var>
                 } else {
                     let literal = solver.new_literal();
 
-                    // starts_after <-> start[task] >= timepoint
+                    // starts_after <-> start[task] > timepoint
+                    // starts_after <-> start[task] >= timepoint + 1
+                    // starts_after <-> -start[task] <= -timepoint - 1
                     solver
                         .add_constraint(constraints::less_than_or_equals(
                             [self.start_times[task].scaled(-1)],
-                            -(timepoint as i32),
+                            -(timepoint as i32) - 1,
                         ))
                         .reify(literal)?;
 
                     literal
                 };
 
-                // is_active_at_timepoint <-> (ends_before \/ starts_after)
+                // !is_active_at_timepoint <-> (ends_before \/ starts_after)
                 solver
                     .add_constraint(constraints::clause([ends_before, starts_after]))
-                    .reify(is_active_at_timepoint)?;
+                    .reify(!is_active_at_timepoint)?;
 
                 usages.push(usage_of_task_at_current_timepoint);
             }

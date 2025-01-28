@@ -8,6 +8,7 @@ use munchkin::branching::Brancher;
 use munchkin::branching::InDomainMin;
 use munchkin::branching::InputOrder;
 use munchkin::model::Constraint;
+use munchkin::model::IntVariable;
 use munchkin::model::IntVariableArray;
 use munchkin::model::Model;
 use munchkin::model::Output;
@@ -25,6 +26,7 @@ enum SearchStrategies {
 
 struct Rcpsp {
     start_times: IntVariableArray,
+    makespan: IntVariable,
 }
 
 impl Problem<SearchStrategies> for Rcpsp {
@@ -88,7 +90,19 @@ impl Problem<SearchStrategies> for Rcpsp {
             });
         }
 
-        Ok((Rcpsp { start_times }, model))
+        let makespan = model.new_interval_variable("Objective", 0, 0);
+
+        Ok((
+            Rcpsp {
+                start_times,
+                makespan,
+            },
+            model,
+        ))
+    }
+
+    fn objective(&self) -> IntVariable {
+        self.makespan
     }
 
     fn get_search(
@@ -99,7 +113,13 @@ impl Problem<SearchStrategies> for Rcpsp {
     ) -> impl Brancher + 'static {
         match strategy {
             SearchStrategies::Default => IndependentVariableValueBrancher::new(
-                InputOrder::new(solver_variables.get_array(self.start_times)),
+                InputOrder::new(
+                    solver_variables
+                        .get_array(self.start_times)
+                        .into_iter()
+                        .chain([solver_variables.to_solver_variable(self.makespan)])
+                        .collect(),
+                ),
                 InDomainMin,
             ),
         }

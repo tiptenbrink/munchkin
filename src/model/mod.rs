@@ -289,7 +289,7 @@ impl VariableMap {
         int_vars.into_iter().map(|var| self.to_solver_variable(var))
     }
 
-    pub fn get_name(&self, output: Output) -> String {
+    pub fn get_name(&self, output: &Output) -> String {
         match output {
             Output::Variable(int_var) => {
                 let mut domain_name = self.names[int_var.id].clone();

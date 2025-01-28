@@ -6,13 +6,14 @@ use clap::ValueEnum;
 
 use crate::branching::Brancher;
 use crate::model::Globals;
+use crate::model::IntVariable;
 use crate::model::Model;
 use crate::model::Output;
 use crate::model::VariableMap;
 use crate::options::SolverOptions;
-use crate::results::solution_iterator::IteratedSolution;
+use crate::results::OptimisationResult;
 use crate::results::ProblemSolution;
-use crate::results::SolutionReference;
+use crate::results::Solution;
 use crate::statistics::configure;
 use crate::termination::TimeBudget;
 use crate::Solver;
@@ -65,6 +66,9 @@ pub trait Problem<SearchStrategies>: Sized {
     /// Constructor function which creates an instance of `Self`, as well as the [`Model`] for the
     /// problem.
     fn create(data: dzn_rs::DataFile<i32>) -> anyhow::Result<(Self, Model)>;
+
+    /// The objective variable.
+    fn objective(&self) -> IntVariable;
 
     fn get_search(
         &self,
@@ -138,45 +142,39 @@ pub fn solve<SearchStrategies>(
         |global| globals.contains(&global),
     );
 
+    let output_variables: Vec<_> = instance.get_output_variables().collect();
+    let callback_solver_variables = solver_variables.clone();
+
+    solver.with_solution_callback(move |solution| {
+        for output in &output_variables {
+            print_output(output, &callback_solver_variables, solution);
+        }
+
+        println!("----------");
+    });
+
     let mut brancher = instance.get_search(search_strategy, &solver, &solver_variables);
     let mut time_budget = TimeBudget::starting_now(time_out);
+    let objective_variable = solver_variables.to_solver_variable(instance.objective());
 
-    let mut iterator = solver.get_solution_iterator(&mut brancher, &mut time_budget);
+    match solver.minimise(&mut brancher, &mut time_budget, objective_variable) {
+        // Printing of the solution is handled in the callback.
+        OptimisationResult::Optimal(_) => println!("=========="),
+        OptimisationResult::Satisfiable(_) => {}
 
-    loop {
-        let next_solution = iterator.next_solution();
-
-        match next_solution {
-            IteratedSolution::Solution(solution) => {
-                let outputs = instance.get_output_variables();
-
-                for output in outputs {
-                    print_output(output, &solver_variables, solution);
-                }
-
-                println!("----------");
-            }
-            IteratedSolution::Finished => break,
-            IteratedSolution::Unknown => {
-                println!("UNKNOWN");
-                break;
-            }
-            IteratedSolution::Unsatisfiable => {
-                println!("UNSATISFIABLE");
-                break;
-            }
-        }
+        OptimisationResult::Unsatisfiable => println!("UNSATISFIABLE"),
+        OptimisationResult::Unknown => println!("UNKNOWN"),
     }
 
     Ok(())
 }
 
-fn print_output(output: Output, solver_variables: &VariableMap, solution: SolutionReference<'_>) {
+fn print_output(output: &Output, solver_variables: &VariableMap, solution: &Solution) {
     let name = solver_variables.get_name(output);
 
     match output {
         Output::Variable(variable) => {
-            let solver_variable = solver_variables.to_solver_variable(variable);
+            let solver_variable = solver_variables.to_solver_variable(*variable);
 
             println!(
                 "{name} = {};",
@@ -185,7 +183,7 @@ fn print_output(output: Output, solver_variables: &VariableMap, solution: Soluti
         }
 
         Output::Array(int_variable_array) => {
-            let solver_variables = solver_variables.get_array(int_variable_array);
+            let solver_variables = solver_variables.get_array(*int_variable_array);
             let num_variables = solver_variables.len();
 
             print!("{name} = [");

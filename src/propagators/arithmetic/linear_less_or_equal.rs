@@ -76,7 +76,7 @@ impl<Var: IntegerVariable + 'static> Propagator for LinearLessOrEqualPropagator<
         for (i, term) in self.terms.iter().enumerate() {
             let bound = self.rhs - (optimistic_lhs - context.lower_bound(term));
 
-            if context.upper_bound(term) > bound {
+            if context.upper_bound(term) >= bound {
                 let reason: PropositionalConjunction = self
                     .terms
                     .iter()

@@ -50,6 +50,13 @@ impl Constraint for DecomposedCircuit {
             use_element_encoding,
         } = self;
 
+        // Offset all successors by -1, as the input is 1-indexed but the encoding is based on
+        // 0-indexed successors.
+        let successors: Vec<_> = successors
+            .iter()
+            .map(|successor| successor.offset(-1))
+            .collect();
+
         let min = successors
             .iter()
             .map(|var| solver.lower_bound(var))

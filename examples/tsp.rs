@@ -60,7 +60,7 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
 
         let (n, dist) = extract_data(&data)?;
 
-        let successors = model.new_interval_variable_array("Successor", 0, n - 1, n as usize);
+        let successors = model.new_interval_variable_array("Successor", 1, n, n as usize);
         let successors_array: Vec<_> = successors.as_array(&model).collect();
 
         model.add_constraint(Constraint::Circuit(successors.as_array(&model).collect()));
@@ -112,6 +112,10 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
             },
             model,
         ))
+    }
+
+    fn objective(&self) -> IntVariable {
+        self.objective
     }
 
     fn get_search(
