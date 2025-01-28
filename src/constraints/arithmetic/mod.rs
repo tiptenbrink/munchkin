@@ -7,6 +7,9 @@ pub use inequality::*;
 use super::Constraint;
 use crate::propagators::arithmetic::maximum::MaximumPropagator;
 use crate::variables::IntegerVariable;
+use crate::variables::Literal;
+use crate::ConstraintOperationError;
+use crate::Solver;
 
 /// Creates the [`Constraint`] `a + b = c`.
 pub fn plus<Var: IntegerVariable + 'static>(a: Var, b: Var, c: Var) -> impl Constraint {
@@ -21,14 +24,37 @@ pub fn maximum<Var: IntegerVariable + 'static>(
     MaximumPropagator::new(array.into(), rhs)
 }
 
-/// Creates the [`Constraint`] `min(array) = m`.
-pub fn minimum<Var: IntegerVariable + 'static>(
-    array: impl IntoIterator<Item = Var>,
-    rhs: impl IntegerVariable + 'static,
+/// Creates the [`Constraint`] `max(array) = m`.
+pub fn maximum_decomposition<Var: IntegerVariable + 'static>(
+    array: impl Into<Box<[Var]>>,
+    rhs: Var,
 ) -> impl Constraint {
-    let array = array
-        .into_iter()
-        .map(|var| var.scaled(-1))
-        .collect::<Box<_>>();
-    maximum(array, rhs.scaled(-1))
+    MaximumDecomposition {
+        array: array.into(),
+        rhs,
+    }
+}
+
+struct MaximumDecomposition<Var> {
+    array: Box<[Var]>,
+    rhs: Var,
+}
+
+impl<Var> Constraint for MaximumDecomposition<Var>
+where
+    Var: IntegerVariable + 'static,
+{
+    fn post(self, solver: &mut Solver) -> Result<(), ConstraintOperationError> {
+        for element in self.array {
+            solver
+                .add_constraint(binary_less_than_or_equals(element, self.rhs.clone()))
+                .post()?;
+        }
+
+        Ok(())
+    }
+
+    fn implied_by(self, _: &mut Solver, _: Literal) -> Result<(), ConstraintOperationError> {
+        todo!("implement half-reification for maximum decomposition")
+    }
 }

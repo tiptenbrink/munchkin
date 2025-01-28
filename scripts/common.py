@@ -20,7 +20,7 @@ INSTANCES = {
 
 MINIZINC_MODELS = {
     "tsp": (Path(__file__).parent / ".." / "models" / "tsp.mzn").resolve(),
-    "rcpsp-makespan": (Path(__file__).parent / ".." / "models" / "tsp.mzn").resolve(),
+    "rcpsp-makespan": (Path(__file__).parent / ".." / "models" / "rcpsp-makespan.mzn").resolve(),
     "rcpsp-tardiness": (Path(__file__).parent / ".." / "models" / "tsp.mzn").resolve(),
 }
 
@@ -93,7 +93,8 @@ def run_minizinc(model_path: Path, data_path: Path, solutions: Path):
 
     for instance in solutions.iterdir():
         solution_count += 1
-        result = run(["minizinc", model_path, data_path, instance], capture_output=True, text=True)
+        mzn_command_args = ["minizinc", str(model_path), str(data_path), str(instance)]
+        result = run(mzn_command_args, capture_output=True, text=True)
 
         if result.returncode != 0:
             print("STDOUT:")
@@ -102,7 +103,8 @@ def run_minizinc(model_path: Path, data_path: Path, solutions: Path):
             print("\nSTDERR:")
             print(result.stderr)
 
-            raise Exception("MiniZinc failed.")
+            cmd = " ".join(mzn_command_args)
+            raise Exception(f"MiniZinc failed. Command: {cmd}")
 
         if "UNSATISFIABLE" in result.stdout:
             error_count += 1

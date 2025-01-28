@@ -76,7 +76,7 @@ impl Problem<SearchStrategies> for Rcpsp {
                 .unwrap()
                 .try_into()?;
 
-            let resource_requirements: Vec<_> = slice_row(&resource_requirements, resource)
+            let resource_requirements: Vec<_> = slice_row(resource_requirements, resource)
                 .into_iter()
                 .map(u32::try_from)
                 .collect::<Result<_, _>>()?;
@@ -90,7 +90,34 @@ impl Problem<SearchStrategies> for Rcpsp {
             });
         }
 
-        let makespan = model.new_interval_variable("Objective", 0, 0);
+        let start_times_array: Vec<_> = start_times.as_array(&model).collect();
+        for task in 0..num_tasks_usize {
+            let task_successors = successors.get([task]).unwrap();
+
+            for successor in task_successors.iter() {
+                // The instance is 1-indexed.
+                let successor = *successor as usize - 1;
+
+                // Start[task] + Duration[task] <= Start[successor]
+                model.add_constraint(Constraint::LinearEqual {
+                    terms: vec![
+                        start_times_array[task],
+                        start_times_array[successor].scaled(-1),
+                    ],
+                    rhs: -(durations[task] as i32),
+                });
+            }
+        }
+
+        let makespan = model.new_interval_variable("Objective", 0, horizon);
+        // model.add_constraint(Constraint::Maximum {
+        //     terms: start_times_array
+        //         .iter()
+        //         .enumerate()
+        //         .map(|(task, start_time)| start_time.offset(durations[task] as i32))
+        //         .collect(),
+        //     rhs: makespan,
+        // });
 
         Ok((
             Rcpsp {

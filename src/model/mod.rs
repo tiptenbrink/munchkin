@@ -194,6 +194,16 @@ fn add_constraints(
                         .post()?;
                 }
             }
+            Constraint::Maximum { terms, rhs } => {
+                let terms: Vec<_> = terms.into_iter().map(to_solver_variable).collect();
+                let rhs = to_solver_variable(rhs);
+
+                if use_global_propagator(Globals::Maximum) {
+                    let _ = solver.add_constraint(constraints::maximum(terms, rhs)).post();
+                } else {
+                    let _ = solver.add_constraint(constraints::maximum_decomposition(terms, rhs)).post();
+                }
+            }
         }
     }
 
@@ -219,6 +229,7 @@ pub enum Constraint {
         resource_requirements: Vec<u32>,
         resource_capacity: u32,
     },
+    Maximum { terms: Vec<IntVariable>, rhs: IntVariable },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -235,7 +246,15 @@ impl IntVariable {
     pub fn scaled(&self, scale: i32) -> IntVariable {
         IntVariable {
             scale: self.scale * scale,
-            offset: self.offset,
+            offset: self.offset * scale,
+            id: self.id,
+        }
+    }
+
+    pub fn offset(&self, offset: i32) -> IntVariable {
+        IntVariable {
+            scale: self.scale,
+            offset: self.offset + offset,
             id: self.id,
         }
     }
@@ -328,4 +347,5 @@ pub enum Globals {
     Element,
     AllDifferent,
     Cumulative,
+    Maximum,
 }

@@ -112,13 +112,13 @@ constraint
 
 solve
    :: int_search( Start ++ [Objective], smallest, indomain_min, complete )
-   minimize objective;
+   minimize Objective;
 
 %-----------------------------------------------------------------------------%
 
 output [
-    "Start times = ", show(s), "\n",
-    "makespan = ", show(objective), "\n"
+    "Start times = ", show(Start), "\n",
+    "makespan = ", show(Objective), "\n"
 ];
 
 %-----------------------------------------------------------------------------%
