@@ -55,6 +55,7 @@ use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_extreme;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
+use crate::termination::Indefinite;
 #[cfg(doc)]
 use crate::Solver;
 
@@ -678,12 +679,12 @@ impl ConstraintSatisfactionSolver {
         brancher: &mut impl Brancher,
     ) -> CSPSolverExecutionFlag {
         loop {
+            self.propagate_enqueued(termination);
+
             if termination.should_stop() {
                 self.state.declare_timeout();
                 return CSPSolverExecutionFlag::Timeout;
             }
-
-            self.propagate_enqueued();
 
             if self.state.no_conflict() {
                 self.declare_new_decision_level();
@@ -902,10 +903,14 @@ impl ConstraintSatisfactionSolver {
     }
 
     /// Main propagation loop.
-    pub(crate) fn propagate_enqueued(&mut self) {
+    pub(crate) fn propagate_enqueued(&mut self, termination: &mut impl TerminationCondition) {
         let num_assigned_variables_old = self.assignments_integer.num_trail_entries();
 
         loop {
+            if termination.should_stop() {
+                break;
+            }
+
             let conflict_info = self.synchronise_propositional_trail_based_on_integer_trail();
 
             if let Some(conflict_info) = conflict_info {
@@ -1118,7 +1123,7 @@ impl ConstraintSatisfactionSolver {
             self.propagator_queue
                 .enqueue_propagator(new_propagator_id, 0);
 
-            self.propagate_enqueued();
+            self.propagate_enqueued(&mut Indefinite);
 
             if self.state.no_conflict() {
                 Ok(())
@@ -1157,7 +1162,7 @@ impl ConstraintSatisfactionSolver {
             return Err(ConstraintOperationError::InfeasibleClause);
         }
 
-        self.propagate_enqueued();
+        self.propagate_enqueued(&mut Indefinite);
 
         if self.state.is_infeasible() {
             self.state.declare_infeasible();

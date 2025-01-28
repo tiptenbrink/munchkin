@@ -9,6 +9,8 @@ import json
 
 STATISTICS = [
     "instance",
+    "status",
+    "objective",
     "numberOfDecisions",
     "numberOfConflicts",
     "averageSizeOfConflictExplanation",
@@ -40,7 +42,7 @@ def run(args: Args):
 
         for run in context.runs.iterdir():
             run_data = parse_run(run)
-            writer.writerow([run_data[stat] for stat in STATISTICS])
+            writer.writerow([run_data.get(stat, "-") for stat in STATISTICS])
 
 
 def parse_run(run: Path):
@@ -52,11 +54,19 @@ def parse_run(run: Path):
 
     # Trim off the optimality marker if it exists.
     if output.endswith(OPTIMALITY_PROVEN):
+        optimal = True
         output = output[:-len(OPTIMALITY_PROVEN)].strip()
+    else:
+        optimal = False
 
     # Trim off the trailing solution separator if it exists.
     if output.endswith(SOLUTION_SEPARATOR):
+        has_solution = True
         output = output[:-len(SOLUTION_SEPARATOR)].strip()
+    else:
+        has_solution = False
+
+    is_unsatisfiable = "UNSATISFIABLE" in output
 
     # If there are multiple solutions, disregard all output except for the last reported
     # batch of statistics.
@@ -69,6 +79,7 @@ def parse_run(run: Path):
 
     stats = {
         "instance": run.stem,
+        "status": "OPTIMAL" if optimal else "SATISFIABLE" if has_solution else "UNSATISFIABLE" if is_unsatisfiable else "UNKNOWN"
     }
 
     for line in result.splitlines():

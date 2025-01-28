@@ -65,7 +65,7 @@ impl Problem<SearchStrategies> for Rcpsp {
             .array_1d::<HashSet<i32>>("suc", num_tasks_usize)
             .ok_or_else(|| anyhow::anyhow!("Missing set of int array 'suc' in data file."))?;
 
-        let horizon: i32 = durations.iter().sum::<u32>().try_into()?;
+        let horizon = durations.iter().sum::<u32>() as i32;
 
         let start_times = model.new_interval_variable_array("Start", 0, horizon, num_tasks_usize);
 
@@ -99,7 +99,7 @@ impl Problem<SearchStrategies> for Rcpsp {
                 let successor = *successor as usize - 1;
 
                 // Start[task] + Duration[task] <= Start[successor]
-                model.add_constraint(Constraint::LinearEqual {
+                model.add_constraint(Constraint::LinearLessEqual {
                     terms: vec![
                         start_times_array[task],
                         start_times_array[successor].scaled(-1),
@@ -110,14 +110,14 @@ impl Problem<SearchStrategies> for Rcpsp {
         }
 
         let makespan = model.new_interval_variable("Objective", 0, horizon);
-        // model.add_constraint(Constraint::Maximum {
-        //     terms: start_times_array
-        //         .iter()
-        //         .enumerate()
-        //         .map(|(task, start_time)| start_time.offset(durations[task] as i32))
-        //         .collect(),
-        //     rhs: makespan,
-        // });
+        model.add_constraint(Constraint::Maximum {
+            terms: start_times_array
+                .iter()
+                .enumerate()
+                .map(|(task, start_time)| start_time.offset(durations[task] as i32))
+                .collect(),
+            rhs: makespan,
+        });
 
         Ok((
             Rcpsp {

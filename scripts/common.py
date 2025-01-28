@@ -14,7 +14,7 @@ EXPERIMENT_DIR = (Path(__file__).parent / ".." / "experiments").resolve()
 
 INSTANCES = {
     "tsp": (DATA_DIR / "tsp"),
-    "rcpsp-makespan": (DATA_DIR / "testing-rcpsp"),
+    "rcpsp-makespan": (DATA_DIR / "rcpsp"),
     "rcpsp-tardiness": (DATA_DIR / "rcpsp"),
 }
 

@@ -166,6 +166,13 @@ fn add_constraints(
                     .add_constraint(constraints::equals(terms, rhs))
                     .post()?;
             }
+            Constraint::LinearLessEqual { terms, rhs } => {
+                let terms: Vec<_> = terms.into_iter().map(to_solver_variable).collect();
+
+                solver
+                    .add_constraint(constraints::less_than_or_equals(terms, rhs))
+                    .post()?;
+            }
             Constraint::Cumulative {
                 start_times,
                 durations,
@@ -223,6 +230,7 @@ pub enum Constraint {
         terms: Vec<IntVariable>,
         rhs: i32,
     },
+    LinearLessEqual { terms: Vec<IntVariable>, rhs: i32 },
     Cumulative {
         start_times: Vec<IntVariable>,
         durations: Vec<u32>,

@@ -86,8 +86,6 @@ def evaluate(args: Args):
     context = initialise(args)
 
     run_instances(context)
-    check_runs(context)
-
 
 
 if __name__ == "__main__":
