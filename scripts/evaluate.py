@@ -60,7 +60,7 @@ def initialise(args: Args) -> Context:
 def run_instances(context: Context):
     instances = INSTANCES[context.model]
 
-    for instance in instances.iterdir():
+    for instance in instances.glob("*.dzn"):
         run_instance(instance, context)
 
 
