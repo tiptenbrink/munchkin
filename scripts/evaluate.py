@@ -76,7 +76,7 @@ def run_instance(instance: Path, context: Context):
     with log_file_path.open('w') as log_file:
         with err_file_path.open('w') as err_file:
             run(
-                ["cargo", "run", "--example", context.model, "--", instance, "solve", str(context.timeout)],
+                ["cargo", "run", "--release", "--example", context.model, "--", instance, "solve", str(context.timeout)],
                 stdout=log_file,
                 stderr=err_file,
             ) 
