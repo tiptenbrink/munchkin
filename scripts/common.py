@@ -27,6 +27,11 @@ MINIZINC_MODELS = {
 SOLUTION_SEPARATOR = "-" * 10
 OPTIMALITY_PROVEN = "=" * 10
 
+class bcolors:
+    OKGREEN = '\033[92m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
 
 @dataclass
 class Context:
@@ -70,11 +75,24 @@ class Context:
 
 
 def check_runs(context: Context):
+    errored_instances = []
+    num_instances = 0
+
     for run in context.runs.iterdir():
-        check_run(run, context.model)
+        num_instances += 1
+        if check_run(run, context.model):
+            errored_instances.append(run.stem)
+
+    if len(errored_instances) > 0:
+        print(f"\n{bcolors.FAIL}{len(errored_instances)}/{num_instances} incorrect instances{bcolors.ENDC}")
+        for errored_instance in errored_instances:
+            print(f"{bcolors.FAIL}\t{errored_instance}{bcolors.ENDC}")
 
 
-def check_run(run: Path, model: ModelType):
+def check_run(run: Path, model: ModelType) -> bool:
+    """
+        Returns true if there were errors
+    """
     instance_name = run.stem
 
     print(f"Checking {instance_name} for {model}")
@@ -84,16 +102,20 @@ def check_run(run: Path, model: ModelType):
     model_path = MINIZINC_MODELS[model]
     data_path = INSTANCES[model] / f"{instance_name}.dzn"
 
-    run_minizinc(model_path, data_path, dzn_dir)
+
+    return run_minizinc(model_path, data_path, dzn_dir)
 
 
-def run_minizinc(model_path: Path, data_path: Path, solutions: Path):
+def run_minizinc(model_path: Path, data_path: Path, solutions: Path) -> bool:
+    """
+        Returns true if there were errors
+    """
     error_count = 0
     solution_count = 0
 
     for instance in solutions.iterdir():
         solution_count += 1
-        mzn_command_args = ["minizinc", str(model_path), str(data_path), str(instance)]
+        mzn_command_args = ["minizinc", "--solver", "cp-sat", str(model_path), str(data_path), str(instance)]
         result = run(mzn_command_args, capture_output=True, text=True)
 
         if result.returncode != 0:
@@ -108,17 +130,20 @@ def run_minizinc(model_path: Path, data_path: Path, solutions: Path):
 
         if "UNSATISFIABLE" in result.stdout:
             error_count += 1
-            print("Error detected in solution")
+            print(f"{bcolors.FAIL}Error detected in solution{bcolors.ENDC}")
             print(f"  Solution: {instance.stem}")
             print(f"  Model: {model_path.stem}")
             print(f"  Data: {data_path.stem}")
 
     if error_count > 0:
-        print(f"\n{error_count}/{solution_count} instances had errors.")
+        print(f"{bcolors.FAIL}\n{error_count}/{solution_count} solutions had errors.{bcolors.ENDC}")
+        return True
     elif solution_count > 0:
-        print(f"All solutions are correct!")
+        print(f"{bcolors.OKGREEN}All solutions are correct!{bcolors.ENDC}")
+        return False
     else:
         print(f"No reported solutions!")
+        return False
 
 
 def iter_solutions(run: Path) -> Iterable[str]:
