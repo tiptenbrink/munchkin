@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal, Union
+from typing import Iterable, Literal, Union
 from subprocess import run
 import shutil
 
@@ -14,7 +14,7 @@ EXPERIMENT_DIR = (Path(__file__).parent / ".." / "experiments").resolve()
 
 INSTANCES = {
     "tsp": (DATA_DIR / "tsp"),
-    "rcpsp-makespan": (DATA_DIR / "rcpsp"),
+    "rcpsp-makespan": (DATA_DIR / "testing-rcpsp"),
     "rcpsp-tardiness": (DATA_DIR / "rcpsp"),
 }
 
@@ -113,8 +113,28 @@ def run_minizinc(model_path: Path, data_path: Path, solutions: Path):
 
     if error_count > 0:
         print(f"\n{error_count}/{solution_count} instances had errors.")
-    else:
+    elif solution_count > 0:
         print(f"All solutions are correct!")
+    else:
+        print(f"No reported solutions!")
+
+
+def iter_solutions(run: Path) -> Iterable[str]:
+    """Iterate over the individual solutions of a run."""
+
+    output_log_path = run / "output.log"
+
+    with output_log_path.open('r') as output:
+        output = output.read()
+
+    if "UNSATISFIABLE" in output or "UNKNOWN" in output:
+        # There are no solutions in this file.
+        return iter([])
+
+    return filter(
+        lambda s: s != "" and s != OPTIMALITY_PROVEN, 
+        map(lambda s: s.strip(), output.split(SOLUTION_SEPARATOR))
+    )
 
 
 def generate_dzn_instances(run: Path) -> Path:
@@ -129,21 +149,7 @@ def generate_dzn_instances(run: Path) -> Path:
 
     solutions_dir.mkdir()
 
-    output_log_path = run / "output.log"
-
-    with output_log_path.open('r') as output:
-        output = output.read()
-
-    if "UNSATISFIABLE" in output or "UNKNOWN" in output:
-        # There are no solutions in this file.
-        return solutions_dir
-
-    solutions = list(
-        filter(
-            lambda s: s != "" and s != OPTIMALITY_PROVEN, 
-            map(lambda s: s.strip(), output.split(SOLUTION_SEPARATOR))
-        )
-    )
+    solutions = list(iter_solutions(run))
 
     print(f"  Identified {len(solutions)} solution(s).")
 

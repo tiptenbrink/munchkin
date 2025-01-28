@@ -162,8 +162,14 @@ pub fn solve<SearchStrategies>(
         OptimisationResult::Optimal(_) => println!("=========="),
         OptimisationResult::Satisfiable(_) => {}
 
-        OptimisationResult::Unsatisfiable => println!("UNSATISFIABLE"),
-        OptimisationResult::Unknown => println!("UNKNOWN"),
+        OptimisationResult::Unsatisfiable => {
+            solver.log_statistics();
+            println!("UNSATISFIABLE");
+        }
+        OptimisationResult::Unknown => {
+            solver.log_statistics();
+            println!("UNKNOWN");
+        }
     }
 
     Ok(())

@@ -126,7 +126,11 @@ impl Problem<SearchStrategies> for Rcpsp {
     }
 
     fn get_output_variables(&self) -> impl Iterator<Item = Output> + '_ {
-        std::iter::once(Output::Array(self.start_times))
+        [
+            Output::Array(self.start_times),
+            Output::Variable(self.makespan),
+        ]
+        .into_iter()
     }
 }
 
