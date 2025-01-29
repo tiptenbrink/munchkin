@@ -38,6 +38,9 @@ An example of the command would be:
 $ python3 scripts/check-solutions.py experiments/<timestamp>-tsp
 ```
 
+> [!IMPORTANT]
+> Solution checking is done using [MiniZinc](https://minizinc.org). Make sure you have it installed and available on your PATH.
+
 ### Statistic Parsing
 The `parse-data` script can be used to aggregate the statistics for all the runs into a single CSV file for an evaluation. It will generate a CSV with a row for each instance, containing solver statistics.
 
