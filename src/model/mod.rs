@@ -4,6 +4,7 @@ use std::ops::Range;
 use clap::ValueEnum;
 
 use crate::constraints;
+use crate::constraints::SubCircuitElimination;
 use crate::options::SolverOptions;
 use crate::variables::AffineView;
 use crate::variables::DomainId;
@@ -122,19 +123,25 @@ fn add_constraints(
 
     for constraint in constraints {
         match constraint {
-            Constraint::Circuit(variables) if use_global_propagator(Globals::Circuit) => {
-                let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
-
-                solver
-                    .add_constraint(constraints::circuit(variables))
-                    .post()?;
-            }
             Constraint::Circuit(variables) => {
                 let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();
 
+                let use_dfs = use_global_propagator(Globals::DfsCircuit);
+                let use_forward_checking = use_global_propagator(Globals::ForwardCheckingCircuit);
+
+                let sub_circuit_elimination = match (use_dfs, use_forward_checking) {
+                    (true, true) => {
+                        panic!("cannot use foward checking and dfs for sub-circuit elimination")
+                    }
+                    (false, true) => SubCircuitElimination::ForwardChecking,
+                    (true, false) => SubCircuitElimination::Dfs,
+                    (false, false) => SubCircuitElimination::Decomposition,
+                };
+
                 solver
-                    .add_constraint(constraints::circuit_decomposed(
+                    .add_constraint(constraints::circuit(
                         variables,
+                        sub_circuit_elimination,
                         !use_global_propagator(Globals::AllDifferent),
                         !use_global_propagator(Globals::Element),
                     ))
@@ -206,9 +213,13 @@ fn add_constraints(
                 let rhs = to_solver_variable(rhs);
 
                 if use_global_propagator(Globals::Maximum) {
-                    let _ = solver.add_constraint(constraints::maximum(terms, rhs)).post();
+                    let _ = solver
+                        .add_constraint(constraints::maximum(terms, rhs))
+                        .post();
                 } else {
-                    let _ = solver.add_constraint(constraints::maximum_decomposition(terms, rhs)).post();
+                    let _ = solver
+                        .add_constraint(constraints::maximum_decomposition(terms, rhs))
+                        .post();
                 }
             }
         }
@@ -230,14 +241,20 @@ pub enum Constraint {
         terms: Vec<IntVariable>,
         rhs: i32,
     },
-    LinearLessEqual { terms: Vec<IntVariable>, rhs: i32 },
+    LinearLessEqual {
+        terms: Vec<IntVariable>,
+        rhs: i32,
+    },
     Cumulative {
         start_times: Vec<IntVariable>,
         durations: Vec<u32>,
         resource_requirements: Vec<u32>,
         resource_capacity: u32,
     },
-    Maximum { terms: Vec<IntVariable>, rhs: IntVariable },
+    Maximum {
+        terms: Vec<IntVariable>,
+        rhs: IntVariable,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -351,9 +368,10 @@ impl VariableMap {
 
 #[derive(Clone, Copy, Debug, ValueEnum, PartialEq, Eq)]
 pub enum Globals {
-    Circuit,
+    DfsCircuit,
     Element,
     AllDifferent,
     Cumulative,
     Maximum,
+    ForwardCheckingCircuit,
 }

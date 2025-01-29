@@ -7,20 +7,20 @@ use crate::engine::cp::propagation::PropagatorInitialisationContext;
 use crate::predicates::PropositionalConjunction;
 use crate::variables::IntegerVariable;
 
-pub(crate) struct CircuitPropagator<Var> {
+pub(crate) struct ForwardCheckingCircuitPropagator<Var> {
     successor: Box<[Var]>,
     // TODO: you can add more fields here!
 }
 
-impl<Var> CircuitPropagator<Var> {
+impl<Var> ForwardCheckingCircuitPropagator<Var> {
     pub(crate) fn new(successor: Box<[Var]>) -> Self {
         Self { successor }
     }
 }
 
-impl<Var: IntegerVariable + 'static> Propagator for CircuitPropagator<Var> {
+impl<Var: IntegerVariable + 'static> Propagator for ForwardCheckingCircuitPropagator<Var> {
     fn name(&self) -> &str {
-        "Circuit"
+        "DfsCircuit"
     }
 
     fn propagate(&self, _context: PropagationContextMut) -> PropagationStatusCP {
