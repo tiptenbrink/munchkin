@@ -23,7 +23,11 @@ def compute_optimal_values(args: Args):
 
     for instance in instances.glob("*.dzn"):
         print(f"Computing {instance.stem}")
-        result = run(["minizinc", "--output-objective", "--solver", "cp-sat", "-f", model_path, instance], capture_output=True, text=True)
+        result = run(
+            ["minizinc", "--output-objective", "--solver", "cp-sat", "-f", model_path, instance], 
+            capture_output=True, 
+            text=True
+        )
 
         if result.returncode != 0:
             print("Failed to run minizinc.")
