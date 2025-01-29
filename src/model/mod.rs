@@ -4,6 +4,7 @@ use std::ops::Range;
 use clap::ValueEnum;
 
 use crate::constraints;
+use crate::constraints::CumulativeImpl;
 use crate::constraints::SubCircuitElimination;
 use crate::options::SolverOptions;
 use crate::variables::AffineView;
@@ -188,25 +189,28 @@ fn add_constraints(
             } => {
                 let start_times: Vec<_> = start_times.into_iter().map(to_solver_variable).collect();
 
-                if use_global_propagator(Globals::Cumulative) {
-                    solver
-                        .add_constraint(constraints::cumulative(
-                            start_times,
-                            &durations,
-                            &resource_requirements,
-                            resource_capacity,
-                        ))
-                        .post()?;
-                } else {
-                    solver
-                        .add_constraint(constraints::cumulative_decomposition(
-                            start_times.to_vec(),
-                            durations,
-                            resource_requirements,
-                            resource_capacity,
-                        ))
-                        .post()?;
-                }
+                let use_time_table = use_global_propagator(Globals::TimeTableCumulative);
+                let use_energetic_reasoning =
+                    use_global_propagator(Globals::EnergeticReasoningCumulative);
+
+                let cumulative_impl = match (use_time_table, use_energetic_reasoning) {
+                    (true, true) => panic!(
+                        "cannot use energetic reasoning and time-table reasoning at the same time"
+                    ),
+                    (true, false) => CumulativeImpl::TimeTable,
+                    (false, true) => CumulativeImpl::EnergeticReasoning,
+                    (false, false) => CumulativeImpl::Decomposition,
+                };
+
+                solver
+                    .add_constraint(constraints::cumulative(
+                        cumulative_impl,
+                        start_times,
+                        durations,
+                        resource_requirements,
+                        resource_capacity,
+                    ))
+                    .post()?;
             }
             Constraint::Maximum { terms, rhs } => {
                 let terms: Vec<_> = terms.into_iter().map(to_solver_variable).collect();
@@ -374,4 +378,6 @@ pub enum Globals {
     Cumulative,
     Maximum,
     ForwardCheckingCircuit,
+    TimeTableCumulative,
+    EnergeticReasoningCumulative,
 }
