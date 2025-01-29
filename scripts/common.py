@@ -1,27 +1,25 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Literal, Union
+from typing import Iterable, Literal, List, Union
 from subprocess import run
 import shutil
 
 
-MODELS = ["tsp", "rcpsp-makespan", "rcpsp-tardiness"]
+MODELS = ["tsp", "rcpsp", "rcpsp"]
 
-ModelType = Union[Literal["tsp"], Literal["rcpsp-makespan"], Literal["rcpsp-tardiness"]] 
+ModelType = Union[Literal["tsp"], Literal["rcpsp"]] 
 
 DATA_DIR = (Path(__file__).parent / ".." / "data").resolve()
 EXPERIMENT_DIR = (Path(__file__).parent / ".." / "experiments").resolve()
 
 INSTANCES = {
     "tsp": (DATA_DIR / "tsp"),
-    "rcpsp-makespan": (DATA_DIR / "rcpsp"),
-    "rcpsp-tardiness": (DATA_DIR / "rcpsp"),
+    "rcpsp": (DATA_DIR / "rcpsp"),
 }
 
 MINIZINC_MODELS = {
     "tsp": (Path(__file__).parent / ".." / "models" / "tsp.mzn").resolve(),
-    "rcpsp-makespan": (Path(__file__).parent / ".." / "models" / "rcpsp-makespan.mzn").resolve(),
-    "rcpsp-tardiness": (Path(__file__).parent / ".." / "models" / "tsp.mzn").resolve(),
+    "rcpsp": (Path(__file__).parent / ".." / "models" / "rcpsp.mzn").resolve(),
 }
 
 SOLUTION_SEPARATOR = "-" * 10
@@ -48,6 +46,18 @@ class Context:
 
     timeout: int
     """The timeout to give to each instance."""
+
+    commit_hash: str
+    """The commit hash in the git history."""
+
+    has_dirty_files: bool
+    """True if the experiment is run with uncommitted changes."""
+
+    executable: Path
+    """The executable containing the model."""
+
+    flags: List[str]
+    """Flags provided to the model for every run. These typically set options in the solver."""
     
 
     def to_dict(self) -> dict:
@@ -58,6 +68,10 @@ class Context:
             "runs": str(self.runs),
             "model": self.model,
             "timeout": self.timeout,
+            "commit_hash": self.commit_hash,
+            "has_dirty_files": self.has_dirty_files,
+            "executable": str(self.executable),
+            "flags": self.flags,
         }
 
 
@@ -70,6 +84,10 @@ class Context:
             runs=Path(dictionary["runs"]),
             model=dictionary["model"],
             timeout=int(dictionary["timeout"]),
+            commit_hash=dictionary["commit_hash"],
+            has_dirty_files=bool(dictionary["has_dirty_files"]),
+            executable=Path(dictionary["executable"]),
+            flags=dictionary["flags"],
         )
 
 
