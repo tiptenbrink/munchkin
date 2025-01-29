@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Literal, List, Union
 from subprocess import run
+from enum import Enum
 import shutil
+import json
 
 
 MODELS = ["tsp", "rcpsp", "rcpsp"]
@@ -24,6 +26,11 @@ MINIZINC_MODELS = {
 
 SOLUTION_SEPARATOR = "-" * 10
 OPTIMALITY_PROVEN = "=" * 10
+
+class RunError(Enum):
+    IncorrectSolution = 1,
+    IncorrectOptimalSolution = 2,
+    Both = 3,
 
 class bcolors:
     OKGREEN = '\033[92m'
@@ -93,24 +100,35 @@ class Context:
 
 
 def check_runs(context: Context):
-    errored_instances = []
+    wrong_solution_instances = []
+    wrong_optimality_instances = []
     num_instances = 0
+
+    with open(INSTANCES[context.model] / "optimal_values.json", "r") as file:
+        optimal_values = json.load(file)
 
     for run in context.runs.iterdir():
         num_instances += 1
-        if check_run(run, context.model):
-            errored_instances.append(run.stem)
+        run_status = check_run(run, context.model, optimal_values)
+        if run_status is RunError.IncorrectSolution:
+            wrong_solution_instances.append(run.stem)
+        elif run_status is RunError.IncorrectOptimalSolution:
+            wrong_optimality_instances.append(run.stem)
+        elif run_status is RunError.Both:
+            wrong_solution_instances.append(run.stem)
+            wrong_optimality_instances.append(run.stem)
 
-    if len(errored_instances) > 0:
-        print(f"\n{bcolors.FAIL}{len(errored_instances)}/{num_instances} incorrect instances{bcolors.ENDC}")
-        for errored_instance in errored_instances:
+    if len(wrong_solution_instances) > 0:
+        print(f"\n{bcolors.FAIL}{len(wrong_solution_instances)}/{num_instances} instances reported at least one incorrect solution{bcolors.ENDC}")
+        for errored_instance in wrong_solution_instances:
             print(f"{bcolors.FAIL}\t{errored_instance}{bcolors.ENDC}")
+    if len(wrong_optimality_instances) > 0:
+        print(f"\n{bcolors.FAIL}{len(wrong_optimality_instances)}/{num_instances} instances reported incorrect optimality{bcolors.ENDC}")
+        for wrong_optimality_instance in wrong_optimality_instances:
+            print(f"{bcolors.FAIL}\t{wrong_optimality_instance}{bcolors.ENDC}")
 
 
-def check_run(run: Path, model: ModelType) -> bool:
-    """
-        Returns true if there were errors
-    """
+def check_run(run: Path, model: ModelType, optimal_values: dict) -> RunError | None:
     instance_name = run.stem
 
     print(f"Checking {instance_name} for {model}")
@@ -120,8 +138,25 @@ def check_run(run: Path, model: ModelType) -> bool:
     model_path = MINIZINC_MODELS[model]
     data_path = INSTANCES[model] / f"{instance_name}.dzn"
 
+    wrong_optimality = False
+    wrong_solution = False
 
-    return run_minizinc(model_path, data_path, dzn_dir)
+    if is_optimal(run): 
+        reported_optimal_value = next((int(line.removeprefix("%%  objective=")) for line in list(iter_solutions(run))[-1].splitlines() if line.startswith("%%  objective=")), None)
+        if optimal_values[instance_name] != reported_optimal_value:
+            wrong_optimality = True
+            print(f"{bcolors.FAIL}Incorrect optimality recorded for {instance_name}; expected {optimal_values[instance_name]} but was {reported_optimal_value}\n{bcolors.ENDC}")
+
+    wrong_solution = run_minizinc(model_path, data_path, dzn_dir)
+
+    if wrong_solution and wrong_optimality:
+        return RunError.Both
+    elif wrong_solution:
+        return RunError.IncorrectSolution
+    elif wrong_optimality:
+        return RunError.IncorrectOptimalSolution
+    else:
+        None
 
 
 def run_minizinc(model_path: Path, data_path: Path, solutions: Path) -> bool:
@@ -180,6 +215,14 @@ def iter_solutions(run: Path) -> Iterable[str]:
         lambda s: s != "" and s != OPTIMALITY_PROVEN, 
         map(lambda s: s.strip(), output.split(SOLUTION_SEPARATOR))
     )
+
+def is_optimal(run: Path) -> bool:
+    output_log_path = run / "output.log"
+
+    with output_log_path.open('r') as output:
+        output = output.read()
+
+    return OPTIMALITY_PROVEN in output
 
 
 def generate_dzn_instances(run: Path) -> Path:
