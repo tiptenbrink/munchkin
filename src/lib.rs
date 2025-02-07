@@ -312,3 +312,4 @@ pub use api::*;
 pub use crate::api::solver::Solver;
 pub use crate::basic_types::ConstraintOperationError;
 pub use crate::basic_types::Random;
+pub(crate) mod tests;
