@@ -50,6 +50,24 @@ impl TestSolver {
         self.assignments_integer.grow(lb, ub)
     }
 
+    pub(crate) fn new_sparse_variable(&mut self, values: &[i32]) -> DomainId {
+        let min_value = *values.iter().min().unwrap();
+        let max_value = *values.iter().max().unwrap();
+
+        self.watch_list.grow();
+        let domain_id = self.assignments_integer.grow(min_value, max_value);
+
+        for value in min_value..=max_value {
+            if values.contains(&value) {
+                continue;
+            }
+            self.assignments_integer
+                .remove_value_from_domain(domain_id, value, None);
+        }
+
+        domain_id
+    }
+
     pub(crate) fn new_literal(&mut self) -> Literal {
         let new_variable_index = self.assignments_propositional.num_propositional_variables();
         self.watch_list_propositional.grow();
