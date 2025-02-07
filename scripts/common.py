@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, Literal, List, Union
 from subprocess import run
 from enum import Enum
 import shutil
+import sys
 import json
 
 
@@ -156,7 +158,7 @@ def check_run(run: Path, model: ModelType, optimal_values: dict) -> RunError | N
     elif wrong_optimality:
         return RunError.IncorrectOptimalSolution
     else:
-        None
+        return None
 
 
 def run_minizinc(model_path: Path, data_path: Path, solutions: Path) -> bool:
@@ -259,3 +261,172 @@ def generate_dzn_instances(run: Path) -> Path:
                 solution_file.write(f"{line}\n")
 
     return solutions_dir
+
+
+@dataclass
+class Args:
+    """The arguments passed to the evaluation script."""
+
+    model: ModelType
+    """The model to evaluate."""
+
+    timeout: int
+    """The timeout to give to each instance."""
+
+    flags: List[str]
+    """Additional flags provided to the solver."""
+
+    allow_dirty: bool
+    """If true, allows uncommitted git changes."""
+
+
+@dataclass 
+class GitStatus:
+    has_dirty_files: bool
+    commit_hash: str
+
+
+def get_git_status(args: Args) -> GitStatus | None:
+    """
+    Get the current git hash of the project. If there are uncommitted changes,
+    the program will exit.
+    """
+
+    status_result = run(
+        ["git", "status", "--porcelain"], 
+        capture_output=True, 
+        text=True
+    )
+    if status_result.returncode != 0:
+        print(f"Failed to run `git status`")
+        print(status_result.stderr)
+        return None
+
+    commit_hash_result = run(
+        ["git", "rev-parse", "HEAD"], 
+        capture_output=True, 
+        text=True
+    )
+    if commit_hash_result.returncode != 0:
+        print(f"Failed to run `git rev-parse HEAD`")
+        print(commit_hash_result.stderr)
+        return None
+
+    commit_hash = commit_hash_result.stdout.strip()
+
+    if len(status_result.stdout) == 0:
+        return GitStatus(
+            commit_hash=commit_hash, 
+            has_dirty_files=False,
+        )
+
+    if args.allow_dirty:
+        return GitStatus(
+            commit_hash=commit_hash, 
+            has_dirty_files=True,
+        )
+
+    print(f"There are uncommitted changes in the project. Cancelling evaluation.")
+    print(f"To ignore this error, run with the '--allow-dirty' flag.")
+    return None
+
+
+def compile_executable(args: Args, experiment_dir: Path) -> Path | None:
+    """
+    Compiles the executable and returns a Path to it.
+    """
+
+    result = run(["cargo", "build", "--release", "--example", args.model])
+
+    if result.returncode != 0:
+        # The cargo output is forwarded so no need for an extra message here.
+        return None
+
+    on_windows = sys.platform.startswith("win")
+    executable_name = f"{args.model}.exe" if on_windows else args.model
+
+    executable_path = Path("target/release/examples/") / executable_name
+    shutil.copy2(executable_path, experiment_dir)
+
+    return experiment_dir / executable_name
+
+
+def initialise(args: Args) -> Context | None:
+    """
+    Prepare everything for evaluation.
+    """
+
+    # Create the directory which stores all the logs, if it does not exist.
+    EXPERIMENT_DIR.mkdir(exist_ok=True)
+
+    git_status = get_git_status(args)
+    if git_status is None:
+        return None
+
+    # Create a directory for the current evaluation.
+    timestamp = datetime.now().strftime("%Y%m%d-%H.%M.%S.%f")
+    directory = EXPERIMENT_DIR / f"{timestamp}-{args.model}"
+
+    try:
+        directory.mkdir()
+    except FileExistsError:
+        print("Error creating evaluation context directory. Please try again.")
+        return None
+
+    # Create the directory which will contain all the solver logs.
+    runs = directory / "runs"
+    runs.mkdir()
+
+    executable = compile_executable(args, directory)
+    if executable is None:
+        return None
+
+    context = Context(
+        directory=directory, 
+        runs=runs,
+        model=args.model,
+        timeout=args.timeout,
+        commit_hash=git_status.commit_hash,
+        executable=executable,
+        flags=args.flags,
+        has_dirty_files=git_status.has_dirty_files,
+    )
+
+    with (directory / "manifest.json").open('w') as context_file:
+        json.dump(context.to_dict(), context_file, indent=4)
+
+    return context
+
+
+def run_instances(context: Context):
+    instances = INSTANCES[context.model]
+
+    for instance in instances.glob("*.dzn"):
+        run_instance(instance, context)
+
+
+def run_instance(instance: Path, context: Context):
+    print(f"Evaluating instance {instance.stem}")
+
+    instance_directory = context.runs / instance.stem
+    instance_directory.mkdir()
+
+    log_file_path = instance_directory / "output.log"
+    err_file_path = instance_directory / "output.err"
+
+    with log_file_path.open('w') as log_file:
+        with err_file_path.open('w') as err_file:
+            run(
+                [context.executable, instance, "solve", *context.flags, str(context.timeout)],
+                stdout=log_file,
+                stderr=err_file,
+            ) 
+
+
+def evaluate(args: Args) -> Context | None:
+    context = initialise(args)
+    if context is None:
+        return None
+
+    run_instances(context)
+    return context
