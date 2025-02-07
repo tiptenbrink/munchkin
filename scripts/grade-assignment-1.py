@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import subprocess
 
-from common import Args, ModelType, evaluate
+from common import Args, ModelType, check_runs, evaluate
 
 # Timeout per instance.
 INSTANCE_TIMEOUT = 20
@@ -59,11 +59,13 @@ def grade_propagator(propagator: str) -> int:
         model=PROPAGATOR_MODELS[propagator],
         timeout=INSTANCE_TIMEOUT,
         flags=["-G", propagator],
-        allow_dirty=False,
+        allow_dirty=True,
     ))
     if context is None:
         return 0
 
+    if not check_runs(context):
+        return 0
 
     print(f"  Passes all tests!")
     return PROPAGATOR_GRADE_CONTRIBUTION[propagator]

@@ -101,7 +101,7 @@ class Context:
 
 
 
-def check_runs(context: Context):
+def check_runs(context: Context) -> bool:
     wrong_solution_instances = []
     wrong_optimality_instances = []
     num_instances = 0
@@ -128,6 +128,10 @@ def check_runs(context: Context):
         print(f"\n{bcolors.FAIL}{len(wrong_optimality_instances)}/{num_instances} instances reported incorrect optimality{bcolors.ENDC}")
         for wrong_optimality_instance in wrong_optimality_instances:
             print(f"{bcolors.FAIL}\t{wrong_optimality_instance}{bcolors.ENDC}")
+
+        return False
+
+    return True
 
 
 def check_run(run: Path, model: ModelType, optimal_values: dict) -> RunError | None:
