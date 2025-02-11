@@ -32,7 +32,7 @@ fn test_holes_are_punched() {
     let mut solver = TestSolver::default();
 
     let x1 = solver.new_sparse_variable(&[1, 2]);
-    let x2 = solver.new_sparse_variable(&[3, 4]);
+    let x2 = solver.new_sparse_variable(&[2, 3]);
     let x3 = solver.new_sparse_variable(&[1, 3]);
     let x4 = solver.new_sparse_variable(&[3, 4]);
     let x5 = solver.new_sparse_variable(&[2, 4, 5, 6]);
