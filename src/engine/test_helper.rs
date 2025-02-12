@@ -109,8 +109,13 @@ impl TestSolver {
         for value in min_domain..=max_domain {
             if !domain.contains(&value) {
                 assert!(
-                    self.contains(var.clone(), value),
+                    !self.contains(var.clone(), value),
                     "{value} was in the domain while it should not be (provided domain {domain:?})"
+                )
+            } else {
+                assert!(
+                    self.contains(var.clone(), value),
+                    "{value} was not in the domain while it should be (provided domain {domain:?})"
                 )
             }
         }
