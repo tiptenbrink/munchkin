@@ -6,9 +6,9 @@ use crate::propagators::circuit::DfsCircuitPropagator;
 fn detects_failure() {
     let mut solver = TestSolver::default();
 
-    let a = solver.new_variable(1, 1);
-    let b = solver.new_variable(0, 0);
-    let c = solver.new_variable(0, 1);
+    let a = solver.new_variable(2, 2);
+    let b = solver.new_variable(1, 1);
+    let c = solver.new_variable(1, 2);
 
     let _ = solver
         .new_propagator(DfsCircuitPropagator::new([a, b, c].into()))
@@ -19,17 +19,17 @@ fn detects_failure() {
 fn detects_simple_prevent() {
     let mut solver = TestSolver::default();
 
-    let a = solver.new_variable(1, 1);
-    let b = solver.new_variable(0, 2);
-    let c = solver.new_variable(0, 2);
+    let a = solver.new_variable(2, 2);
+    let b = solver.new_variable(1, 3);
+    let c = solver.new_variable(1, 3);
 
     let _ = solver
         .new_propagator(DfsCircuitPropagator::new([a, b, c].into()))
         .expect("Expected circuit to not detect a conflict");
 
-    solver.assert_bounds(b, 2, 2);
+    solver.assert_bounds(b, 3, 3);
     // No self-loops
-    assert!(!solver.contains(c, 2));
+    assert!(!solver.contains(c, 3));
 }
 
 #[test]
@@ -37,18 +37,18 @@ fn detects_simple_prevent() {
 fn detect_simple_dfs() {
     let mut solver = TestSolver::default();
 
-    let a = solver.new_sparse_variable(&[1, 4, 5]);
-    let b = solver.new_sparse_variable(&[2, 3]);
-    let c = solver.new_sparse_variable(&[0]);
-    let d = solver.new_sparse_variable(&[2]);
-    let e = solver.new_sparse_variable(&[1, 3]);
-    let f = solver.new_sparse_variable(&[0, 6]);
-    let g = solver.new_sparse_variable(&[3, 4]);
+    let a = solver.new_sparse_variable(&[2, 5, 6]);
+    let b = solver.new_sparse_variable(&[3, 4]);
+    let c = solver.new_sparse_variable(&[1]);
+    let d = solver.new_sparse_variable(&[3]);
+    let e = solver.new_sparse_variable(&[2, 4]);
+    let f = solver.new_sparse_variable(&[1, 7]);
+    let g = solver.new_sparse_variable(&[4, 5]);
 
     let _ = solver
         .new_propagator(DfsCircuitPropagator::new([a, b, c, d, e, f, g].into()))
         .expect("{Expected no error}");
 
-    assert!(!solver.contains(f, 0));
-    assert!(!solver.contains(g, 3));
+    assert!(!solver.contains(f, 1));
+    assert!(!solver.contains(g, 4));
 }
