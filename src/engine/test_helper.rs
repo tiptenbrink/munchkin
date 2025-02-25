@@ -27,6 +27,7 @@ use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
+use crate::munchkin_assert_simple;
 use crate::ConstraintOperationError;
 
 /// A container for CP variables, which can be used to test propagators.
@@ -84,24 +85,55 @@ impl TestSolver {
     }
 
     pub(crate) fn new_variable(&mut self, lb: i32, ub: i32) -> DomainId {
-        self.watch_list.grow();
-        self.assignments_integer.grow(lb, ub)
+        self.variable_literal_mappings.create_new_domain(
+            lb,
+            ub,
+            &mut self.assignments_integer,
+            &mut self.watch_list,
+            &mut self.watch_list_propositional,
+            &mut self.clausal_propagator,
+            &mut self.assignments_propositional,
+            &mut self.clause_allocator,
+        )
     }
 
     pub(crate) fn new_sparse_variable(&mut self, values: &[i32]) -> DomainId {
-        let min_value = *values.iter().min().unwrap();
-        let max_value = *values.iter().max().unwrap();
+        assert!(
+            !values.is_empty(),
+            "cannot create a variable with an empty domain"
+        );
+        let mut values = values.to_vec();
 
-        self.watch_list.grow();
-        let domain_id = self.assignments_integer.grow(min_value, max_value);
+        values.sort();
+        values.dedup();
 
-        for value in min_value..=max_value {
-            if values.contains(&value) {
-                continue;
+        let lower_bound = values[0];
+        let upper_bound = values[values.len() - 1];
+
+        let domain_id = self.new_variable(lower_bound, upper_bound);
+
+        let mut next_idx = 0;
+        for value in lower_bound..=upper_bound {
+            if value == values[next_idx] {
+                next_idx += 1;
+            } else {
+                self.assignments_integer
+                    .remove_initial_value_from_domain(domain_id, value, None)
+                    .expect("the domain should not be empty");
+                self.assignments_propositional.enqueue_decision_literal(
+                    self.variable_literal_mappings.get_inequality_literal(
+                        domain_id,
+                        value,
+                        &self.assignments_propositional,
+                        &self.assignments_integer,
+                    ),
+                )
             }
-            self.assignments_integer
-                .remove_value_from_domain(domain_id, value, None);
         }
+        munchkin_assert_simple!(
+            next_idx == values.len(),
+            "Expected all values to have been processed"
+        );
 
         domain_id
     }
