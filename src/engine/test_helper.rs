@@ -31,7 +31,7 @@ use crate::munchkin_assert_simple;
 use crate::ConstraintOperationError;
 
 /// A container for CP variables, which can be used to test propagators.
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub(crate) struct TestSolver {
     pub(crate) assignments_integer: AssignmentsInteger,
     pub(crate) reason_store: ReasonStore,
@@ -44,6 +44,40 @@ pub(crate) struct TestSolver {
     next_id: u32,
 
     propagators: Vec<Box<dyn Propagator>>,
+}
+
+impl Default for TestSolver {
+    fn default() -> Self {
+        let mut result = Self {
+            assignments_integer: Default::default(),
+            reason_store: Default::default(),
+            assignments_propositional: Default::default(),
+            watch_list: Default::default(),
+            watch_list_propositional: Default::default(),
+            variable_literal_mappings: Default::default(),
+            clausal_propagator: Default::default(),
+            clause_allocator: Default::default(),
+            next_id: Default::default(),
+            propagators: Default::default(),
+        };
+        let true_literal = Literal::new(
+            result
+                .variable_literal_mappings
+                .create_new_propositional_variable(
+                    &mut result.watch_list_propositional,
+                    &mut result.clausal_propagator,
+                    &mut result.assignments_propositional,
+                ),
+            true,
+        );
+        result.assignments_propositional.true_literal = true_literal;
+        result.assignments_propositional.false_literal = !true_literal;
+
+        let addition = result.add_clause(vec![true_literal]);
+        assert!(addition.is_ok());
+
+        result
+    }
 }
 
 type BoxedPropagator = Box<dyn Propagator>;
