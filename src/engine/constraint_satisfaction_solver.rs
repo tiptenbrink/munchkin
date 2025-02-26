@@ -1256,6 +1256,10 @@ impl ConstraintSatisfactionSolver {
                         &self.variable_literal_mappings,
                         &mut self.reason_store,
                         &self.cp_propagators,
+                        self.internal_parameters
+                            .use_non_generic_conflict_explanation,
+                        self.internal_parameters
+                            .use_non_generic_propagation_explanation
                     ),
                     "Inconsistency in explanation detected"
                 );
