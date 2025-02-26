@@ -151,7 +151,7 @@ mod tests {
     fn computing_an_eager_reason_returns_a_reference_to_the_conjunction() {
         let integers = AssignmentsInteger::default();
         let booleans = AssignmentsPropositional::default();
-        let context = PropagationContext::new(&integers, &booleans);
+        let context = PropagationContext::new(&integers, &booleans, false, false);
 
         let x = DomainId::new(0);
         let y = DomainId::new(1);
@@ -166,7 +166,7 @@ mod tests {
     fn computing_a_lazy_reason_evaluates_the_reason_and_returns_a_reference() {
         let integers = AssignmentsInteger::default();
         let booleans = AssignmentsPropositional::default();
-        let context = PropagationContext::new(&integers, &booleans);
+        let context = PropagationContext::new(&integers, &booleans, false, false);
 
         let x = DomainId::new(0);
         let y = DomainId::new(1);
@@ -183,7 +183,7 @@ mod tests {
         let mut reason_store = ReasonStore::default();
         let integers = AssignmentsInteger::default();
         let booleans = AssignmentsPropositional::default();
-        let context = PropagationContext::new(&integers, &booleans);
+        let context = PropagationContext::new(&integers, &booleans, false, false);
 
         let x = DomainId::new(0);
         let y = DomainId::new(1);

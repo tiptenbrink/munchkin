@@ -157,6 +157,8 @@ fn simple_bound1() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -214,6 +216,8 @@ fn simple_bound2() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -275,6 +279,8 @@ fn simple_bound3() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -338,6 +344,8 @@ fn simple_assign() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -386,6 +394,8 @@ fn simple_lb_override1() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -434,6 +444,8 @@ fn hole_lb_override() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);
@@ -484,6 +496,8 @@ fn hole_push_lb() {
         &mut reason_store,
         &clausal_propagator,
         &mut clause_allocator,
+        true,
+        true,
     );
 
     p.minimise(context, &mut learned_nogood);

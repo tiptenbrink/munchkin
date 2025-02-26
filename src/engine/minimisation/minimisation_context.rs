@@ -26,9 +26,16 @@ pub(crate) struct MinimisationContext<'a> {
     pub(crate) reason_store: &'a mut ReasonStore,
     pub(crate) clausal_propagator: &'a ClausalPropagator,
     pub(crate) clause_allocator: &'a mut ClauseAllocator,
+
+    pub use_non_generic_conflict_explanation: bool,
+    pub use_non_generic_propagation_explanation: bool,
 }
 
 impl<'a> MinimisationContext<'a> {
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     pub(crate) fn new(
         assignments_integer: &'a AssignmentsInteger,
         assignments_propositional: &'a AssignmentsPropositional,
@@ -38,6 +45,9 @@ impl<'a> MinimisationContext<'a> {
         reason_store: &'a mut ReasonStore,
         clausal_propagator: &'a ClausalPropagator,
         clause_allocator: &'a mut ClauseAllocator,
+
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> Self {
         Self {
             assignments_integer,
@@ -47,6 +57,8 @@ impl<'a> MinimisationContext<'a> {
             reason_store,
             clausal_propagator,
             clause_allocator,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         }
     }
 
@@ -130,8 +142,12 @@ impl MinimisationContext<'_> {
         propagated_literal: Literal,
         reason_ref: ReasonRef,
     ) -> ClauseReference {
-        let propagation_context =
-            PropagationContext::new(self.assignments_integer, self.assignments_propositional);
+        let propagation_context = PropagationContext::new(
+            self.assignments_integer,
+            self.assignments_propositional,
+            self.use_non_generic_conflict_explanation,
+            self.use_non_generic_propagation_explanation,
+        );
         let reason = self
             .reason_store
             .get_or_compute(reason_ref, &propagation_context)

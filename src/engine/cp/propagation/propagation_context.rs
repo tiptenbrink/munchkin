@@ -23,16 +23,23 @@ use crate::munchkin_assert_simple;
 pub struct PropagationContext<'a> {
     assignments_integer: &'a AssignmentsInteger,
     assignments_propositional: &'a AssignmentsPropositional,
+
+    pub use_non_generic_conflict_explanation: bool,
+    pub use_non_generic_propagation_explanation: bool,
 }
 
 impl<'a> PropagationContext<'a> {
     pub fn new(
         assignments_integer: &'a AssignmentsInteger,
         assignments_propositional: &'a AssignmentsPropositional,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> Self {
         PropagationContext {
             assignments_integer,
             assignments_propositional,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         }
     }
 }
@@ -45,6 +52,8 @@ pub struct PropagationContextMut<'a> {
     propagator: PropagatorId,
 
     reification_literal: Option<Literal>,
+    pub use_non_generic_conflict_explanation: bool,
+    pub use_non_generic_propagation_explanation: bool,
 }
 
 impl<'a> PropagationContextMut<'a> {
@@ -53,6 +62,8 @@ impl<'a> PropagationContextMut<'a> {
         reason_store: &'a mut ReasonStore,
         assignments_propositional: &'a mut AssignmentsPropositional,
         propagator: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> Self {
         PropagationContextMut {
             assignments_integer,
@@ -60,6 +71,8 @@ impl<'a> PropagationContextMut<'a> {
             assignments_propositional,
             propagator,
             reification_literal: None,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         }
     }
 
@@ -97,6 +110,8 @@ impl<'a> PropagationContextMut<'a> {
         PropagationContext {
             assignments_integer: self.assignments_integer,
             assignments_propositional: self.assignments_propositional,
+            use_non_generic_conflict_explanation: self.use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation: self.use_non_generic_propagation_explanation,
         }
     }
 }

@@ -45,6 +45,8 @@ mod tests {
                 &mut reason_store,
                 &mut assignments_propositional,
                 PropagatorId(0),
+                false,
+                false,
             );
 
             let result = context.set_lower_bound(&domain, 2, conjunction!());
@@ -68,6 +70,8 @@ mod tests {
                 &mut reason_store,
                 &mut assignments_propositional,
                 PropagatorId(0),
+                false,
+                false,
             );
 
             let result = context.set_upper_bound(&domain, 15, conjunction!());
@@ -91,6 +95,8 @@ mod tests {
                 &mut reason_store,
                 &mut assignments_propositional,
                 PropagatorId(0),
+                false,
+                false,
             );
 
             let result = context.remove(&domain, 15, conjunction!());
@@ -116,6 +122,8 @@ mod tests {
                 &mut reason_store,
                 &mut assignments_propositional,
                 PropagatorId(0),
+                false,
+                false,
             );
 
             let result = context.assign_literal(literal, false, conjunction!());

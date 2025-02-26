@@ -165,6 +165,8 @@ impl TestSolver {
             id,
             &self.assignments_integer,
             &self.assignments_propositional,
+            true,
+            true,
         ))?;
 
         let num_trail_entries_before = self.assignments_integer.num_trail_entries();
@@ -240,6 +242,8 @@ impl TestSolver {
             &mut self.reason_store,
             &mut self.assignments_propositional,
             PropagatorId(0),
+            true,
+            true,
         );
         let propagate = self.propagators[propagator].propagate(context);
 
@@ -252,6 +256,8 @@ impl TestSolver {
                 &self.variable_literal_mappings,
                 &mut self.reason_store,
                 &self.propagators,
+                true,
+                true
             ),
             "Inconsistency in explanation detected in test case"
         );
@@ -263,8 +269,12 @@ impl TestSolver {
         predicate: IntegerPredicate,
     ) -> &PropositionalConjunction {
         let reason_ref = self.assignments_integer.get_reason_for_predicate(predicate);
-        let context =
-            PropagationContext::new(&self.assignments_integer, &self.assignments_propositional);
+        let context = PropagationContext::new(
+            &self.assignments_integer,
+            &self.assignments_propositional,
+            true,
+            true,
+        );
         self.reason_store
             .get_or_compute(reason_ref, &context)
             .expect("reason_ref should not be stale")
@@ -278,8 +288,12 @@ impl TestSolver {
         let reason_ref = self
             .assignments_propositional
             .get_reason_for_assignment(literal, assignment);
-        let context =
-            PropagationContext::new(&self.assignments_integer, &self.assignments_propositional);
+        let context = PropagationContext::new(
+            &self.assignments_integer,
+            &self.assignments_propositional,
+            true,
+            true,
+        );
         self.reason_store
             .get_or_compute(reason_ref, &context)
             .expect("reason_ref should not be stale")

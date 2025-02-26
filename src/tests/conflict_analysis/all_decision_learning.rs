@@ -9,7 +9,7 @@ use crate::engine::conflict_analysis::AllDecisionLearning;
 use crate::engine::conflict_analysis::ConflictAnalysisContext;
 use crate::engine::conflict_analysis::ConflictResolver;
 use crate::engine::constraint_satisfaction_solver::CSPSolverState;
-use crate::engine::constraint_satisfaction_solver::ClauseMinimisationStrategy;
+use crate::engine::constraint_satisfaction_solver::NogoodMinimisationStrategy;
 use crate::engine::constraint_satisfaction_solver::ConflictResolutionStrategy;
 use crate::engine::constraint_satisfaction_solver::Counters;
 use crate::engine::cp::PropagatorQueue;
@@ -73,7 +73,9 @@ fn test_all_decision() {
             internal_parameters: &SolverOptions {
                 random_generator: SmallRng::seed_from_u64(42),
                 conflict_resolver: ConflictResolutionStrategy::AllDecision,
-                minimisation_strategy: ClauseMinimisationStrategy::default(),
+                minimisation_strategy: NogoodMinimisationStrategy::default(),
+                use_non_generic_conflict_explanation: true,
+                use_non_generic_propagation_explanation: true,
             },
             assumptions: &vec![],
             solver_state: &mut state,

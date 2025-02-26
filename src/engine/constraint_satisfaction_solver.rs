@@ -206,12 +206,19 @@ pub struct SatisfactionSolverOptions {
     /// The strategy to use when the solver reaches a conflicting state.
     pub conflict_resolver: ConflictResolutionStrategy,
 
-    pub minimisation_strategy: ClauseMinimisationStrategy,
+    /// The strategy which is used for nogood minimisation
+    pub minimisation_strategy: NogoodMinimisationStrategy,
+
+    /// Whether to use a non-generic conflict explanation
+    pub use_non_generic_conflict_explanation: bool,
+
+    /// Whether to use a non-generic propagation explanation
+    pub use_non_generic_propagation_explanation: bool,
 }
 
 /// The strategy used for minimisation
 #[derive(Default, Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
-pub enum ClauseMinimisationStrategy {
+pub enum NogoodMinimisationStrategy {
     #[default]
     NoMinimisation,
     /// Apply only recursive minimisation
@@ -224,14 +231,14 @@ pub enum ClauseMinimisationStrategy {
     SemanticRecursive,
 }
 
-impl Display for ClauseMinimisationStrategy {
+impl Display for NogoodMinimisationStrategy {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ClauseMinimisationStrategy::NoMinimisation => write!(f, "no-minimisation"),
-            ClauseMinimisationStrategy::Recursive => write!(f, "recursive"),
-            ClauseMinimisationStrategy::Semantic => write!(f, "semantic"),
-            ClauseMinimisationStrategy::RecursiveSemantic => write!(f, "recursive-semantic"),
-            ClauseMinimisationStrategy::SemanticRecursive => write!(f, "semantic-recursive"),
+            NogoodMinimisationStrategy::NoMinimisation => write!(f, "no-minimisation"),
+            NogoodMinimisationStrategy::Recursive => write!(f, "recursive"),
+            NogoodMinimisationStrategy::Semantic => write!(f, "semantic"),
+            NogoodMinimisationStrategy::RecursiveSemantic => write!(f, "recursive-semantic"),
+            NogoodMinimisationStrategy::SemanticRecursive => write!(f, "semantic-recursive"),
         }
     }
 }
@@ -274,7 +281,9 @@ impl Default for SatisfactionSolverOptions {
         SatisfactionSolverOptions {
             random_generator: SmallRng::seed_from_u64(42),
             conflict_resolver: ConflictResolutionStrategy::default(),
-            minimisation_strategy: ClauseMinimisationStrategy::default(),
+            minimisation_strategy: NogoodMinimisationStrategy::default(),
+            use_non_generic_conflict_explanation: false,
+            use_non_generic_propagation_explanation: false,
         }
     }
 }
@@ -867,22 +876,26 @@ impl ConstraintSatisfactionSolver {
             &mut self.reason_store,
             &self.clausal_propagator,
             &mut self.clause_allocator,
+            self.internal_parameters
+                .use_non_generic_conflict_explanation,
+            self.internal_parameters
+                .use_non_generic_propagation_explanation,
         );
         match self.internal_parameters.minimisation_strategy {
-            ClauseMinimisationStrategy::NoMinimisation => {}
-            ClauseMinimisationStrategy::Recursive => {
+            NogoodMinimisationStrategy::NoMinimisation => {}
+            NogoodMinimisationStrategy::Recursive => {
                 self.recursive_minimiser.minimise(context, learned_nogood);
                 self.counters
                     .average_number_of_literals_removed_recursive
                     .add_term((num_literals_before - learned_nogood.literals.len()) as u64);
             }
-            ClauseMinimisationStrategy::Semantic => {
+            NogoodMinimisationStrategy::Semantic => {
                 self.semantic_minimiser.minimise(context, learned_nogood);
                 self.counters
                     .average_number_of_literals_removed_semantic
                     .add_term((num_literals_before - learned_nogood.literals.len()) as u64);
             }
-            ClauseMinimisationStrategy::RecursiveSemantic => {
+            NogoodMinimisationStrategy::RecursiveSemantic => {
                 self.recursive_minimiser.minimise(context, learned_nogood);
                 self.counters
                     .average_number_of_literals_removed_recursive
@@ -896,13 +909,17 @@ impl ConstraintSatisfactionSolver {
                     &mut self.reason_store,
                     &self.clausal_propagator,
                     &mut self.clause_allocator,
+                    self.internal_parameters
+                        .use_non_generic_conflict_explanation,
+                    self.internal_parameters
+                        .use_non_generic_propagation_explanation,
                 );
                 self.semantic_minimiser.minimise(context, learned_nogood);
                 self.counters
                     .average_number_of_literals_removed_semantic
                     .add_term((new_before - learned_nogood.literals.len()) as u64);
             }
-            ClauseMinimisationStrategy::SemanticRecursive => {
+            NogoodMinimisationStrategy::SemanticRecursive => {
                 self.semantic_minimiser.minimise(context, learned_nogood);
                 self.counters
                     .average_number_of_literals_removed_semantic
@@ -916,6 +933,10 @@ impl ConstraintSatisfactionSolver {
                     &mut self.reason_store,
                     &self.clausal_propagator,
                     &mut self.clause_allocator,
+                    self.internal_parameters
+                        .use_non_generic_conflict_explanation,
+                    self.internal_parameters
+                        .use_non_generic_propagation_explanation,
                 );
                 self.recursive_minimiser.minimise(context, learned_nogood);
                 self.counters
@@ -928,7 +949,14 @@ impl ConstraintSatisfactionSolver {
             .add_term((num_literals_before - learned_nogood.literals.len()) as u64);
 
         recompute_invariants(
-            PropagationContext::new(&self.assignments_integer, &self.assignments_propositional),
+            PropagationContext::new(
+                &self.assignments_integer,
+                &self.assignments_propositional,
+                self.internal_parameters
+                    .use_non_generic_conflict_explanation,
+                self.internal_parameters
+                    .use_non_generic_propagation_explanation,
+            ),
             learned_nogood,
         )
     }
@@ -1155,6 +1183,10 @@ impl ConstraintSatisfactionSolver {
                     &self.assignments_propositional,
                     &self.clause_allocator,
                     &self.cp_propagators,
+                    self.internal_parameters
+                        .use_non_generic_conflict_explanation,
+                    self.internal_parameters
+                        .use_non_generic_propagation_explanation,
                 )
         );
     }
@@ -1178,6 +1210,10 @@ impl ConstraintSatisfactionSolver {
             &mut self.reason_store,
             &mut self.assignments_propositional,
             propagator_id,
+            self.internal_parameters
+                .use_non_generic_conflict_explanation,
+            self.internal_parameters
+                .use_non_generic_propagation_explanation,
         );
 
         match propagator.propagate(context) {
@@ -1196,6 +1232,10 @@ impl ConstraintSatisfactionSolver {
                         propositional_conjunction,
                         propagator.as_ref(),
                         propagator_id,
+                        self.internal_parameters
+                            .use_non_generic_conflict_explanation,
+                        self.internal_parameters
+                            .use_non_generic_propagation_explanation,
                     ));
                 }
 
@@ -1303,6 +1343,10 @@ impl ConstraintSatisfactionSolver {
             new_propagator_id,
             &self.assignments_integer,
             &self.assignments_propositional,
+            self.internal_parameters
+                .use_non_generic_conflict_explanation,
+            self.internal_parameters
+                .use_non_generic_propagation_explanation,
         );
 
         let initialisation_status = new_propagator.initialise_at_root(&mut initialisation_context);

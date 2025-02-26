@@ -56,6 +56,8 @@ impl DebugHelper {
         assignments_propositional: &AssignmentsPropositional,
         clause_allocator: &ClauseAllocator,
         propagators_cp: &[Box<dyn Propagator>],
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> bool {
         let mut assignments_integer_clone = assignments_integer.clone();
         let mut assignments_propostional_clone = assignments_propositional.clone();
@@ -80,6 +82,8 @@ impl DebugHelper {
                 &mut reason_store,
                 &mut assignments_propostional_clone,
                 PropagatorId(propagator_id.try_into().unwrap()),
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
             );
             let propagation_status_cp = propagator.propagate(context);
 
@@ -126,6 +130,10 @@ impl DebugHelper {
         true
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     pub(crate) fn debug_reported_failure(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
@@ -133,6 +141,8 @@ impl DebugHelper {
         failure_reason: &PropositionalConjunction,
         propagator: &dyn Propagator,
         propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> bool {
         DebugHelper::debug_reported_propagations_reproduce_failure(
             assignments_integer,
@@ -141,6 +151,8 @@ impl DebugHelper {
             failure_reason,
             propagator,
             propagator_id,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         );
 
         DebugHelper::debug_reported_propagations_negate_failure_and_check(
@@ -150,10 +162,16 @@ impl DebugHelper {
             failure_reason,
             propagator,
             propagator_id,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         );
         true
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     fn debug_reported_propagations_reproduce_failure(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
@@ -161,6 +179,8 @@ impl DebugHelper {
         failure_reason: &PropositionalConjunction,
         propagator: &dyn Propagator,
         propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) {
         let mut assignments_integer_clone = assignments_integer.debug_create_empty_clone();
         let mut assignments_propositional_clone =
@@ -188,6 +208,8 @@ impl DebugHelper {
                 &mut reason_store,
                 &mut assignments_propositional_clone,
                 propagator_id,
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
             );
             let debug_propagation_status_cp = propagator.propagate(context);
             assert!(
@@ -209,6 +231,10 @@ impl DebugHelper {
         }
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     fn debug_reported_propagations_negate_failure_and_check(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
@@ -216,6 +242,8 @@ impl DebugHelper {
         failure_reason: &PropositionalConjunction,
         propagator: &dyn Propagator,
         propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) {
         // let the failure be: (p1 && p2 && p3) -> failure
         //  then (!p1 || !p2 || !p3) should not lead to immediate failure
@@ -257,6 +285,8 @@ impl DebugHelper {
                     &mut reason_store,
                     &mut assignments_propositional_clone,
                     propagator_id,
+                    use_non_generic_conflict_explanation,
+                    use_non_generic_propagation_explanation,
                 );
                 let debug_propagation_status_cp = propagator.propagate(context);
 
@@ -282,6 +312,10 @@ impl DebugHelper {
     ///    propagating from scratch
     ///
     /// Note that this method does not check whether an empty explanation is correct!
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     #[cfg(any(feature = "explanation-checks", test))]
     pub(crate) fn debug_check_propagations(
         num_trail_entries_before: usize,
@@ -291,6 +325,8 @@ impl DebugHelper {
         variable_literal_mappings: &VariableLiteralMappings,
         reason_store: &mut ReasonStore,
         propagators_cp: &[Box<dyn Propagator>],
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> bool {
         let mut result = true;
         for trail_index in num_trail_entries_before..assignments.num_trail_entries() {
@@ -301,7 +337,12 @@ impl DebugHelper {
                     trail_entry
                         .reason
                         .expect("Expected checked propagation to have a reason"),
-                    &PropagationContext::new(assignments, assignments_propositional),
+                    &PropagationContext::new(
+                        assignments,
+                        assignments_propositional,
+                        use_non_generic_conflict_explanation,
+                        use_non_generic_propagation_explanation,
+                    ),
                 )
                 .expect("Expected reason to exist for integer trail entry");
 
@@ -317,11 +358,17 @@ impl DebugHelper {
                 variable_literal_mappings,
                 propagators_cp[propagator_id.0 as usize].as_ref(),
                 propagator_id,
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
             );
         }
         result
     }
 
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     #[cfg(any(feature = "explanation-checks", test))]
     fn debug_propagator_reason(
         propagated_predicate: IntegerPredicate,
@@ -331,6 +378,8 @@ impl DebugHelper {
         variable_literal_mappings: &VariableLiteralMappings,
         propagator: &dyn Propagator,
         propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> bool {
         assert!(
             reason.iter().all(|predicate| {
@@ -377,6 +426,8 @@ impl DebugHelper {
                     &mut reason_store,
                     &mut assignments_propositional_clone,
                     propagator_id,
+                    use_non_generic_conflict_explanation,
+                    use_non_generic_propagation_explanation,
                 );
                 let debug_propagation_status_cp = propagator.propagate(context);
 

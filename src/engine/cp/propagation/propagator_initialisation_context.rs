@@ -27,6 +27,9 @@ pub struct PropagatorInitialisationContext<'a> {
     next_local_id: LocalId,
 
     context: PropagationContext<'a>,
+
+    pub use_non_generic_conflict_explanation: bool,
+    pub use_non_generic_propagation_explanation: bool,
 }
 
 impl PropagatorInitialisationContext<'_> {
@@ -36,6 +39,8 @@ impl PropagatorInitialisationContext<'_> {
         propagator_id: PropagatorId,
         assignments_integer: &'a AssignmentsInteger,
         assignments_propositional: &'a AssignmentsPropositional,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
     ) -> PropagatorInitialisationContext<'a> {
         PropagatorInitialisationContext {
             watch_list,
@@ -43,7 +48,14 @@ impl PropagatorInitialisationContext<'_> {
             propagator_id,
             next_local_id: LocalId::from(0),
 
-            context: PropagationContext::new(assignments_integer, assignments_propositional),
+            context: PropagationContext::new(
+                assignments_integer,
+                assignments_propositional,
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
+            ),
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
         }
     }
 

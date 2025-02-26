@@ -110,6 +110,8 @@ fn test_recursive_minimisation() {
         &mut solver.reason_store,
         &solver.clausal_propagator,
         &mut solver.clause_allocator,
+        true,
+        true,
     );
     minimiser.minimise(context, &mut learned_nogood);
 

@@ -92,7 +92,7 @@ def grade_propagator(propagator: str) -> int:
     context = evaluate(Args(
         model=PROPAGATOR_MODELS[propagator],
         timeout=INSTANCE_TIMEOUT,
-        flags=["-G", propagator],
+        flags=["-G", propagator, 'C', 'P'],
         allow_dirty=True,
         explanation_checks=True,
     ))

@@ -5,8 +5,8 @@ use std::time::Duration;
 use clap::ValueEnum;
 
 use crate::branching::Brancher;
-use crate::engine::constraint_satisfaction_solver::ClauseMinimisationStrategy;
 use crate::engine::constraint_satisfaction_solver::ConflictResolutionStrategy;
+use crate::engine::constraint_satisfaction_solver::NogoodMinimisationStrategy;
 use crate::model::Globals;
 use crate::model::IntVariable;
 use crate::model::Model;
@@ -53,11 +53,19 @@ pub enum Action<SearchStrategies: OptionEnum> {
         search_strategy: SearchStrategies,
 
         #[arg(short = 'M', long = "minimisation", default_value_t)]
-        minimisation: ClauseMinimisationStrategy,
+        minimisation: NogoodMinimisationStrategy,
 
         /// The conflict resolution strategy to use
         #[arg(short = 'C', long = "resolution", default_value_t)]
         conflict_resolution: ConflictResolutionStrategy,
+
+        /// Whether to use a non-trivial conflict explanation
+        #[arg(short = 'E', long = "non-trivial-conflict")]
+        use_non_trivial_conflict_explanation: bool,
+
+        /// Whether to use a non-trivial propagation explanation
+        #[arg(short = 'P', long = "non-trivial-propagation")]
+        use_non_trivial_propagation_explanation: bool,
 
         /// The number of seconds the solver is allowed to run.
         time_out: u64,
@@ -126,6 +134,8 @@ where
             conflict_resolution,
             minimisation,
             time_out,
+            use_non_trivial_conflict_explanation: use_non_generic_conflict_explanation,
+            use_non_trivial_propagation_explanation: use_non_generic_propagation_explanation,
         } => solve(
             model,
             instance,
@@ -133,6 +143,8 @@ where
             globals,
             conflict_resolution,
             minimisation,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
             proof_path,
             Duration::from_secs(time_out),
         ),
@@ -147,7 +159,9 @@ pub fn solve<SearchStrategies>(
     search_strategy: SearchStrategies,
     globals: Vec<Globals>,
     conflict_resolution: ConflictResolutionStrategy,
-    minimisation: ClauseMinimisationStrategy,
+    minimisation: NogoodMinimisationStrategy,
+    use_non_generic_conflict_explanation: bool,
+    use_non_generic_propagation_explanation: bool,
     _proof_path: Option<PathBuf>,
     time_out: Duration,
 ) -> anyhow::Result<()> {
@@ -155,6 +169,8 @@ pub fn solve<SearchStrategies>(
         SolverOptions {
             conflict_resolver: conflict_resolution,
             minimisation_strategy: minimisation,
+            use_non_generic_conflict_explanation,
+            use_non_generic_propagation_explanation,
             ..Default::default()
         },
         |global| globals.contains(&global),

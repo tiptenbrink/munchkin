@@ -284,8 +284,14 @@ impl ConflictAnalysisContext<'_> {
         propagated_literal: Literal,
         reason_ref: ReasonRef,
     ) -> ClauseReference {
-        let propagation_context =
-            PropagationContext::new(self.assignments_integer, self.assignments_propositional);
+        let propagation_context = PropagationContext::new(
+            self.assignments_integer,
+            self.assignments_propositional,
+            self.internal_parameters
+                .use_non_generic_conflict_explanation,
+            self.internal_parameters
+                .use_non_generic_propagation_explanation,
+        );
         let reason = self
             .reason_store
             .get_or_compute(reason_ref, &propagation_context)
