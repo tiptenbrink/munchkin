@@ -64,7 +64,7 @@ pub enum Action<SearchStrategies: OptionEnum> {
         use_non_trivial_conflict_explanation: bool,
 
         /// Whether to use a non-trivial propagation explanation
-        #[arg(short = 'P', long = "non-trivial-propagation")]
+        #[arg(short = 'R', long = "non-trivial-propagation")]
         use_non_trivial_propagation_explanation: bool,
 
         /// The number of seconds the solver is allowed to run.
