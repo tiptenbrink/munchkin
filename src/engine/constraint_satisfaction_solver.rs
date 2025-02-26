@@ -1070,6 +1070,8 @@ impl ConstraintSatisfactionSolver {
     pub(crate) fn propagate_enqueued(&mut self, termination: &mut impl TerminationCondition) {
         let num_trail_entries_before = self.assignments_integer.num_trail_entries();
 
+        let mut empty_domain_reported = false;
+
         loop {
             if termination.should_stop() {
                 break;
@@ -1093,6 +1095,12 @@ impl ConstraintSatisfactionSolver {
                 self.state
                     .declare_conflict(conflict_info.try_into().unwrap());
                 break;
+            } else {
+                munchkin_assert_simple!(!empty_domain_reported,
+                    "An empty domain was reported but no empty domain was detected.
+                     An empty domain error should only be reported when adjusting the domains of a variable.
+                     If you want to report an explicit conflict then please use `Inconsistency::other(...)`"
+                );
             }
 
             self.synchronise_integer_trail_based_on_propositional_trail()
@@ -1102,11 +1110,12 @@ impl ConstraintSatisfactionSolver {
             let propagation_status_one_step_cp = self.propagate_cp_one_step();
 
             match propagation_status_one_step_cp {
-                PropagationStatusOneStepCP::PropagationHappened => {
+                PropagationStatusOneStepCP::PropagationHappened(reported_empty_domain) => {
                     // do nothing, the result will be that the clausal propagator will go next
                     //  recall that the idea is to always propagate simpler propagators before more
                     // complex ones  after a cp propagation was done one step,
                     // it is time to go to the clausal propagator
+                    empty_domain_reported = reported_empty_domain;
                 }
                 PropagationStatusOneStepCP::FixedPoint => {
                     break;
@@ -1173,7 +1182,9 @@ impl ConstraintSatisfactionSolver {
 
         match propagator.propagate(context) {
             // An empty domain conflict will be caught by the clausal propagator.
-            Err(Inconsistency::EmptyDomain) => PropagationStatusOneStepCP::PropagationHappened,
+            Err(Inconsistency::EmptyDomain) => {
+                PropagationStatusOneStepCP::PropagationHappened(true)
+            }
 
             // A propagator-specific reason for the current conflict.
             Err(Inconsistency::Other(conflict_info)) => {
@@ -1208,7 +1219,7 @@ impl ConstraintSatisfactionSolver {
                     ),
                     "Inconsistency in explanation detected"
                 );
-                PropagationStatusOneStepCP::PropagationHappened
+                PropagationStatusOneStepCP::PropagationHappened(false)
             }
         }
     }
