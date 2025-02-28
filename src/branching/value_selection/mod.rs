@@ -7,9 +7,7 @@
 //! should only select values which are in the domain of the provided variable.
 
 mod in_domain_min;
-mod phase_saving;
 mod value_selector;
 
 pub use in_domain_min::*;
-pub use phase_saving::*;
 pub use value_selector::ValueSelector;
