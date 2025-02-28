@@ -4,6 +4,8 @@ from argparse import ArgumentParser, REMAINDER
 
 from common import *
 
+MODELS = ["tsp", "rcpsp"]
+
 
 if __name__ == "__main__":
     arg_parser = ArgumentParser(description="Evaluate a Munckin model")
