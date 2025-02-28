@@ -181,9 +181,16 @@ impl ConflictAnalysisContext<'_> {
             .into()
     }
 
+    /// Returns the assignment level of the provided literal
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn get_assignment_level_for_literal(&self, literal: Literal) -> usize {
+        self.assignments_propositional
+            .get_literal_assignment_level(literal)
+    }
+
     /// Returns the total number of trail entries
     #[allow(unused, reason = "will be used in an assignment")]
-    pub(crate) fn get_num_trail_entires(&self) -> usize {
+    pub(crate) fn get_num_trail_entries(&self) -> usize {
         self.assignments_propositional.num_trail_entries()
     }
 }
