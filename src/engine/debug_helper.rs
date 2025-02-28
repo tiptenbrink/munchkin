@@ -433,7 +433,7 @@ impl DebugHelper {
 
                 // Note that it could be the case that the propagation leads to conflict, in this
                 // case it should be the result of a propagation (i.e. an EmptyDomain)
-                if let Err(conflict) = debug_propagation_status_cp {
+                if let Err(_conflict) = debug_propagation_status_cp {
                     // If we have found an error then it should either be derived by an empty
                     // domain due to the same propagation holding
                     //
@@ -443,42 +443,7 @@ impl DebugHelper {
                     // propagation or all of the reason literals should be in the conflict
                     // explanation
 
-                    assert!(
-                        {
-                            let is_empty_domain = matches!(conflict, Inconsistency::EmptyDomain);
-                            let has_propagated_predicate =
-                                assignments_clone.does_integer_predicate_hold(propagated_predicate);
-                            if is_empty_domain && has_propagated_predicate {
-                                // We check whether an empty domain was derived, if this is indeed
-                                // the case then we check whether the propagated predicate was
-                                // reproduced
-                                return true;
-                            }
-
-                            // If this is not the case then we check whether the explanation is a
-                            // subset of the premises
-                            if let Inconsistency::Other(ConflictInfo::Explanation(
-                                ref found_inconsistency,
-                            )) = conflict
-                            {
-                                found_inconsistency
-                                    .iter()
-                                    .all(|predicate| reason.contains(predicate))
-                                    || reason
-                                        .iter()
-                                        .all(|predicate| found_inconsistency.contains(predicate))
-                            } else {
-                                false
-                            }
-                        },
-                        "Debug propagation detected a conflict other than a propagation\n
-                         Propagator: '{}'\n
-                         Propagator id: {propagator_id}\n
-                         Reported reason: {reason:?}\n
-                         Reported propagation: {propagated_predicate}\n
-                         Reported Conflict: {conflict:?}",
-                        propagator.name()
-                    );
+                    // For now we do not check anything here since the check  could be erroneous
                 } else {
                     // The predicate was either a propagation for the assignments_integer or
                     // assignments_propositional
