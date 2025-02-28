@@ -180,6 +180,12 @@ impl ConflictAnalysisContext<'_> {
             .collect::<Vec<_>>()
             .into()
     }
+
+    /// Returns the total number of trail entries
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn get_num_trail_entires(&self) -> usize {
+        self.assignments_propositional.num_trail_entries()
+    }
 }
 
 /// Private retrieval methods
