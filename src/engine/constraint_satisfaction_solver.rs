@@ -948,17 +948,22 @@ impl ConstraintSatisfactionSolver {
             .average_number_of_literals_removed_minimisation
             .add_term((num_literals_before - learned_nogood.literals.len()) as u64);
 
-        recompute_invariants(
-            PropagationContext::new(
-                &self.assignments_integer,
-                &self.assignments_propositional,
-                self.internal_parameters
-                    .use_non_generic_conflict_explanation,
-                self.internal_parameters
-                    .use_non_generic_propagation_explanation,
-            ),
-            learned_nogood,
-        )
+        if !matches!(
+            self.internal_parameters.minimisation_strategy,
+            NogoodMinimisationStrategy::NoMinimisation,
+        ) {
+            recompute_invariants(
+                PropagationContext::new(
+                    &self.assignments_integer,
+                    &self.assignments_propositional,
+                    self.internal_parameters
+                        .use_non_generic_conflict_explanation,
+                    self.internal_parameters
+                        .use_non_generic_propagation_explanation,
+                ),
+                learned_nogood,
+            )
+        }
     }
 
     /// Changes the state based on the conflict analysis result (stored in
