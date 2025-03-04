@@ -20,7 +20,7 @@ impl<Var> ForwardCheckingCircuitPropagator<Var> {
 
 impl<Var: IntegerVariable + 'static> Propagator for ForwardCheckingCircuitPropagator<Var> {
     fn name(&self) -> &str {
-        "DfsCircuit"
+        "ForwardCheckingCircuit"
     }
 
     fn propagate(&self, _context: PropagationContextMut) -> PropagationStatusCP {

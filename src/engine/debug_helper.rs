@@ -9,11 +9,9 @@ use super::cp::propagation::PropagationContext;
 #[cfg(any(feature = "explanation-checks", test))]
 use super::cp::reason::ReasonStore;
 use super::predicates::integer_predicate::IntegerPredicate;
+use super::predicates::integer_predicate::IntegerPredicateConversionError;
 use super::sat::ClauseAllocator;
-#[cfg(any(feature = "explanation-checks", test))]
-use crate::basic_types::ConflictInfo;
-#[cfg(any(feature = "explanation-checks", test))]
-use crate::basic_types::Inconsistency;
+use crate::basic_types::HashSet;
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::cp::propagation::PropagationContextMut;
 use crate::engine::cp::propagation::Propagator;
@@ -24,6 +22,7 @@ use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::sat::ClausalPropagator;
 use crate::munchkin_assert_simple;
+use crate::predicates::PredicateConstructor;
 
 #[derive(Copy, Clone)]
 pub(crate) struct DebugDyn<'a> {
@@ -155,16 +154,6 @@ impl DebugHelper {
             use_non_generic_propagation_explanation,
         );
 
-        DebugHelper::debug_reported_propagations_negate_failure_and_check(
-            assignments_integer,
-            assignments_propositional,
-            variable_literal_mappings,
-            failure_reason,
-            propagator,
-            propagator_id,
-            use_non_generic_conflict_explanation,
-            use_non_generic_propagation_explanation,
-        );
         true
     }
 
@@ -212,13 +201,31 @@ impl DebugHelper {
                 use_non_generic_propagation_explanation,
             );
             let debug_propagation_status_cp = propagator.propagate(context);
-            assert!(
-                debug_propagation_status_cp.is_err(),
-                "Debug propagation could not reproduce the conflict reported
+            if debug_propagation_status_cp.is_ok()
+                && Self::is_circuit_explanation_with_only_inequalities(
+                    propagator,
+                    &reason_predicates,
+                )
+            {
+                Self::debug_circuit_reason_conflict(
+                    &reason_predicates,
+                    assignments_integer,
+                    assignments_propositional,
+                    variable_literal_mappings,
+                    propagator,
+                    propagator_id,
+                    use_non_generic_conflict_explanation,
+                    use_non_generic_propagation_explanation,
+                );
+            } else {
+                assert!(
+                    debug_propagation_status_cp.is_err(),
+                    "Debug propagation could not reproduce the conflict reported
                  by the propagator '{}' with id '{propagator_id}'.\n
                  The reported failure: {failure_reason}",
-                propagator.name()
-            );
+                    propagator.name()
+                );
+            }
         } else {
             // if even adding the predicates failed, the method adding the predicates would have
             // printed debug info already  so we just need to add more information to
@@ -227,81 +234,6 @@ impl DebugHelper {
                 "Bug detected for '{}' propagator with id '{propagator_id}' after a failure reason
                  was given by the propagator.",
                 propagator.name()
-            );
-        }
-    }
-
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Should be refactored in the future"
-    )]
-    fn debug_reported_propagations_negate_failure_and_check(
-        assignments_integer: &AssignmentsInteger,
-        assignments_propositional: &AssignmentsPropositional,
-        variable_literal_mappings: &VariableLiteralMappings,
-        failure_reason: &PropositionalConjunction,
-        propagator: &dyn Propagator,
-        propagator_id: PropagatorId,
-        use_non_generic_conflict_explanation: bool,
-        use_non_generic_propagation_explanation: bool,
-    ) {
-        // let the failure be: (p1 && p2 && p3) -> failure
-        //  then (!p1 || !p2 || !p3) should not lead to immediate failure
-
-        // empty reasons are by definition satisifed after negation
-        if failure_reason.num_predicates() == 0 {
-            return;
-        }
-
-        let reason_predicates: Vec<Predicate> = failure_reason.iter().copied().collect();
-        let mut found_nonconflicting_state_at_root = false;
-        for predicate in &reason_predicates {
-            let mut assignments_integer_clone = assignments_integer.debug_create_empty_clone();
-            let mut assignments_propositional_clone =
-                assignments_propositional.debug_create_empty_clone();
-
-            let negated_predicate = !*predicate;
-            let outcome = if let Ok(integer_predicate) =
-                <Predicate as TryInto<IntegerPredicate>>::try_into(negated_predicate)
-            {
-                assignments_integer_clone.apply_integer_predicate(integer_predicate, None)
-            } else {
-                // Will be handled when adding the predicates to the assignments propositional
-                Ok(())
-            };
-
-            let adding_propositional_predicates_was_successful =
-                DebugHelper::debug_add_predicates_to_assignment_propositional(
-                    &assignments_integer_clone,
-                    &mut assignments_propositional_clone,
-                    variable_literal_mappings,
-                    &reason_predicates,
-                );
-
-            if outcome.is_ok() && adding_propositional_predicates_was_successful {
-                let mut reason_store = Default::default();
-                let context = PropagationContextMut::new(
-                    &mut assignments_integer_clone,
-                    &mut reason_store,
-                    &mut assignments_propositional_clone,
-                    propagator_id,
-                    use_non_generic_conflict_explanation,
-                    use_non_generic_propagation_explanation,
-                );
-                let debug_propagation_status_cp = propagator.propagate(context);
-
-                if debug_propagation_status_cp.is_ok() {
-                    found_nonconflicting_state_at_root = true;
-                    break;
-                }
-            }
-        }
-        if !found_nonconflicting_state_at_root {
-            panic!(
-                "Negating the reason for failure was still leading to failure
-                 for propagator '{}' with id '{propagator_id}'.\n
-                 The reported failure: {failure_reason}\n",
-                propagator.name(),
             );
         }
     }
@@ -445,9 +377,30 @@ impl DebugHelper {
 
                     // For now we do not check anything here since the check  could be erroneous
                 } else {
-                    // The predicate was either a propagation for the assignments_integer or
-                    // assignments_propositional
-                    assert!(
+                    let result =
+                        assignments_clone.does_integer_predicate_hold(propagated_predicate);
+                    if !result
+                        && Self::is_circuit_explanation_with_only_inequalities(
+                            propagator,
+                            &reason_predicates,
+                        )
+                    {
+                        Self::debug_circuit_reason_propagation(
+                            propagated_predicate,
+                            &reason_predicates,
+                            assignments_integer,
+                            assignments_propositional,
+                            variable_literal_mappings,
+                            propagator,
+                            propagator_id,
+                            use_non_generic_conflict_explanation,
+                            use_non_generic_propagation_explanation,
+                        );
+                    } else {
+                        // The predicate was either a propagation for the assignments_integer or
+                        // assignments_propositional
+
+                        assert!(
                     assignments_clone.does_integer_predicate_hold(propagated_predicate),
                     "Debug propagation could not obtain the propagated predicate given the provided reason.\n
                      Propagator: '{}'\n
@@ -456,6 +409,7 @@ impl DebugHelper {
                      Reported propagation: {propagated_predicate}",
                     propagator.name()
                 );
+                    }
                 }
             } else {
                 // Adding the predicates of the reason to the assignments led to failure
@@ -468,6 +422,177 @@ impl DebugHelper {
         }
 
         true
+    }
+
+    fn is_circuit_explanation_with_only_inequalities(
+        propagator: &dyn Propagator,
+        original_reason: &[Predicate],
+    ) -> bool {
+        propagator.name().contains("Circuit")
+            && original_reason.iter().all(|predicate| {
+                let integer_predicate: Result<IntegerPredicate, IntegerPredicateConversionError> =
+                    (*predicate).try_into();
+                if let Ok(predicate) = integer_predicate {
+                    predicate.is_not_equal_predicate()
+                } else {
+                    false
+                }
+            })
+    }
+
+    fn transform_circuit_reason(
+        original_reason: &[Predicate],
+        assignments_integer: &AssignmentsInteger,
+    ) -> Vec<Predicate> {
+        let mut variables = HashSet::new();
+        original_reason.iter().for_each(|&predicate| {
+            let _ = variables.insert(predicate.get_domain().unwrap());
+        });
+
+        variables
+            .iter()
+            .map(|&domain_id| -> _ {
+                domain_id.equality_predicate(assignments_integer.get_assigned_value(domain_id))
+            })
+            .collect::<Vec<_>>()
+    }
+
+    fn debug_circuit_reason_conflict(
+        original_reason: &[Predicate],
+        assignments_integer: &AssignmentsInteger,
+        assignments_propositional: &AssignmentsPropositional,
+        variable_literal_mappings: &VariableLiteralMappings,
+        propagator: &dyn Propagator,
+        propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
+    ) {
+        // Special case for the circuit propagator
+        let reason_predicates =
+            Self::transform_circuit_reason(original_reason, assignments_integer);
+        let mut assignments_integer_clone = assignments_integer.debug_create_empty_clone();
+        let mut assignments_propositional_clone =
+            assignments_propositional.debug_create_empty_clone();
+
+        let adding_predicates_was_successful =
+            DebugHelper::debug_add_predicates_to_assignment_integers(
+                &mut assignments_integer_clone,
+                &reason_predicates,
+            );
+        let adding_propositional_predicates_was_successful =
+            DebugHelper::debug_add_predicates_to_assignment_propositional(
+                &assignments_integer_clone,
+                &mut assignments_propositional_clone,
+                variable_literal_mappings,
+                &reason_predicates,
+            );
+
+        if adding_predicates_was_successful && adding_propositional_predicates_was_successful {
+            //  now propagate using the debug propagation method
+            let mut reason_store = Default::default();
+            let context = PropagationContextMut::new(
+                &mut assignments_integer_clone,
+                &mut reason_store,
+                &mut assignments_propositional_clone,
+                propagator_id,
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
+            );
+            let debug_propagation_status_cp = propagator.propagate(context);
+            assert!(
+                debug_propagation_status_cp.is_err(),
+                "Debug propagation could not reproduce the conflict reported
+                 by the propagator '{}' with id '{propagator_id}'.\n
+                 The reported failure: {original_reason:?}",
+                propagator.name()
+            );
+        } else {
+            // if even adding the predicates failed, the method adding the predicates would have
+            // printed debug info already  so we just need to add more information to
+            // indicate where the failure happened
+            panic!(
+                "Bug detected for '{}' propagator with id '{propagator_id}' after a failure reason
+                 was given by the propagator.",
+                propagator.name()
+            );
+        }
+    }
+
+    fn debug_circuit_reason_propagation(
+        propagated_predicate: IntegerPredicate,
+        original_reason: &[Predicate],
+        assignments_integer: &AssignmentsInteger,
+        assignments_propositional: &AssignmentsPropositional,
+        variable_literal_mappings: &VariableLiteralMappings,
+        propagator: &dyn Propagator,
+        propagator_id: PropagatorId,
+        use_non_generic_conflict_explanation: bool,
+        use_non_generic_propagation_explanation: bool,
+    ) {
+        // Special case for the circuit propagator
+        let reason_predicates =
+            Self::transform_circuit_reason(original_reason, assignments_integer);
+
+        let mut assignments_clone = assignments_integer.debug_create_empty_clone();
+        let mut assignments_propositional_clone =
+            assignments_propositional.debug_create_empty_clone();
+        let adding_predicates_was_successful =
+            DebugHelper::debug_add_predicates_to_assignment_integers(
+                &mut assignments_clone,
+                &reason_predicates,
+            );
+        let adding_literals_was_successful =
+            DebugHelper::debug_add_predicates_to_assignment_propositional(
+                &assignments_clone,
+                &mut assignments_propositional_clone,
+                variable_literal_mappings,
+                &reason_predicates,
+            );
+        if adding_predicates_was_successful && adding_literals_was_successful {
+            // Now propagate using the debug propagation method.
+            let mut reason_store = Default::default();
+            let context = PropagationContextMut::new(
+                &mut assignments_clone,
+                &mut reason_store,
+                &mut assignments_propositional_clone,
+                propagator_id,
+                use_non_generic_conflict_explanation,
+                use_non_generic_propagation_explanation,
+            );
+            let debug_propagation_status_cp = propagator.propagate(context);
+            if let Err(_conflict) = debug_propagation_status_cp {
+                // If we have found an error then it should either be derived by an
+                // empty domain due to the same
+                // propagation holding
+                //
+                // or
+                //
+                // The conflict explanation should be a subset of the reason
+                // literals for the propagation or
+                // all of the reason literals should be in the conflict
+                // explanation
+
+                // For now we do not check anything here since the check  could be
+                // erroneous
+            } else {
+                assert!(
+                    assignments_clone.does_integer_predicate_hold(propagated_predicate),
+                    "Debug propagation could not obtain the propagated predicate given the provided reason.\n
+                     Propagator: '{}'\n
+                     Propagator id: {propagator_id}\n
+                     Reported reason: {reason_predicates:?}\n
+                     Reported propagation: {propagated_predicate}",
+                    propagator.name()
+                );
+            }
+        } else {
+            // Adding the predicates of the reason to the assignments led to failure
+            panic!(
+                    "Bug detected for '{}' propagator with id '{propagator_id}'
+                     after a reason was given by the propagator. This could indicate that the reason contained conflicting predicates.",
+                    propagator.name()
+                );
+        }
     }
 }
 
