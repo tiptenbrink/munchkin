@@ -1,6 +1,7 @@
 use std::fmt::Debug;
 use std::fmt::Formatter;
 
+#[cfg(any(feature = "explanation-checks", test))]
 use log::debug;
 use log::warn;
 
@@ -8,20 +9,27 @@ use log::warn;
 use super::cp::propagation::PropagationContext;
 #[cfg(any(feature = "explanation-checks", test))]
 use super::cp::reason::ReasonStore;
+#[cfg(any(feature = "explanation-checks", test))]
 use super::predicates::integer_predicate::IntegerPredicate;
+#[cfg(any(feature = "explanation-checks", test))]
 use super::predicates::integer_predicate::IntegerPredicateConversionError;
 use super::sat::ClauseAllocator;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::HashSet;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::cp::propagation::PropagationContextMut;
 use crate::engine::cp::propagation::Propagator;
 use crate::engine::cp::propagation::PropagatorId;
 use crate::engine::cp::AssignmentsInteger;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::engine::cp::VariableLiteralMappings;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::engine::predicates::predicate::Predicate;
 use crate::engine::sat::AssignmentsPropositional;
 use crate::engine::sat::ClausalPropagator;
 use crate::munchkin_assert_simple;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::predicates::PredicateConstructor;
 
 #[derive(Copy, Clone)]
@@ -133,6 +141,7 @@ impl DebugHelper {
         clippy::too_many_arguments,
         reason = "Should be refactored in the future"
     )]
+    #[cfg(feature = "explanation-checks")]
     pub(crate) fn debug_reported_failure(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
@@ -142,7 +151,7 @@ impl DebugHelper {
         propagator_id: PropagatorId,
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
-    ) -> bool {
+    ) {
         DebugHelper::debug_reported_propagations_reproduce_failure(
             assignments_integer,
             assignments_propositional,
@@ -152,15 +161,14 @@ impl DebugHelper {
             propagator_id,
             use_non_generic_conflict_explanation,
             use_non_generic_propagation_explanation,
-        );
-
-        true
+        )
     }
 
     #[allow(
         clippy::too_many_arguments,
         reason = "Should be refactored in the future"
     )]
+    #[cfg(feature = "explanation-checks")]
     fn debug_reported_propagations_reproduce_failure(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
@@ -424,6 +432,7 @@ impl DebugHelper {
         true
     }
 
+    #[cfg(any(feature = "explanation-checks", test))]
     fn is_circuit_explanation_with_only_inequalities(
         propagator: &dyn Propagator,
         original_reason: &[Predicate],
@@ -440,6 +449,7 @@ impl DebugHelper {
             })
     }
 
+    #[cfg(any(feature = "explanation-checks", test))]
     fn transform_circuit_reason(
         original_reason: &[Predicate],
         assignments_integer: &AssignmentsInteger,
@@ -457,6 +467,7 @@ impl DebugHelper {
             .collect::<Vec<_>>()
     }
 
+    #[cfg(feature = "explanation-checks")]
     fn debug_circuit_reason_conflict(
         original_reason: &[Predicate],
         assignments_integer: &AssignmentsInteger,
@@ -518,6 +529,11 @@ impl DebugHelper {
         }
     }
 
+    #[cfg(any(feature = "explanation-checks", test))]
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "Should be refactored in the future"
+    )]
     fn debug_circuit_reason_propagation(
         propagated_predicate: IntegerPredicate,
         original_reason: &[Predicate],
@@ -598,6 +614,7 @@ impl DebugHelper {
 
 // methods that serve as small utility functions
 impl DebugHelper {
+    #[cfg(any(feature = "explanation-checks", test))]
     fn debug_add_predicates_to_assignment_integers(
         assignments_integer: &mut AssignmentsInteger,
         predicates: &[Predicate],
@@ -627,6 +644,7 @@ impl DebugHelper {
         true
     }
 
+    #[cfg(any(feature = "explanation-checks", test))]
     fn debug_add_predicates_to_assignment_propositional(
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &mut AssignmentsPropositional,

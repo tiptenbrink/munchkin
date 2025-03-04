@@ -62,7 +62,6 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::Literal;
 use crate::engine::variables::PropositionalVariable;
 use crate::engine::DebugHelper;
-use crate::munchkin_assert_advanced;
 use crate::munchkin_assert_extreme;
 use crate::munchkin_assert_moderate;
 use crate::munchkin_assert_simple;
@@ -1229,19 +1228,20 @@ impl ConstraintSatisfactionSolver {
 
             // A propagator-specific reason for the current conflict.
             Err(Inconsistency::Other(conflict_info)) => {
-                if let ConflictInfo::Explanation(ref propositional_conjunction) = conflict_info {
-                    munchkin_assert_advanced!(DebugHelper::debug_reported_failure(
+                if let ConflictInfo::Explanation(ref _propositional_conjunction) = conflict_info {
+                    #[cfg(feature = "explanation-checks")]
+                    DebugHelper::debug_reported_failure(
                         &self.assignments_integer,
                         &self.assignments_propositional,
                         &self.variable_literal_mappings,
-                        propositional_conjunction,
+                        _propositional_conjunction,
                         propagator.as_ref(),
                         propagator_id,
                         self.internal_parameters
                             .use_non_generic_conflict_explanation,
                         self.internal_parameters
                             .use_non_generic_propagation_explanation,
-                    ));
+                    );
                 }
 
                 PropagationStatusOneStepCP::ConflictDetected {
