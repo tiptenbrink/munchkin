@@ -53,6 +53,7 @@ impl<Key: StorageKey, Value> KeyedVec<Key, Value> {
     }
 }
 
+#[allow(unused, reason = "-")]
 impl<Key: StorageKey, Value: Clone> KeyedVec<Key, Value> {
     pub(crate) fn resize(&mut self, new_len: usize, value: Value) {
         self.elements.resize(new_len, value)
@@ -101,7 +102,8 @@ impl StorageKey for usize {
     }
 }
 /// A simple trait which requires that the structures implementing this trait can generate an index.
-pub trait StorageKey {
+pub(crate) trait StorageKey {
     fn index(&self) -> usize;
+    #[allow(unused, reason = "-")]
     fn create_from_index(index: usize) -> Self;
 }

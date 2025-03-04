@@ -284,6 +284,10 @@ impl ConflictAnalysisContext<'_> {
                     })
                     .collect();
 
+                if explanation_literals.len() < 2 {
+                    panic!("Explanation for a conflict contained fewer than 2 literals; this could be an indication that conflict explanations have not been implemented yet")
+                }
+
                 self.explanation_clause_manager
                     .add_explanation_clause_unchecked(explanation_literals, self.clause_allocator)
             }
@@ -329,6 +333,10 @@ impl ConflictAnalysisContext<'_> {
                 }
             }))
             .collect();
+
+        if explanation_literals.len() < 2 {
+            panic!("Explanation for a propagation contained fewer than 1 literal; this could be an indication that propagations explanations have not been implemented yet")
+        }
 
         self.explanation_clause_manager
             .add_explanation_clause_unchecked(explanation_literals, self.clause_allocator)
