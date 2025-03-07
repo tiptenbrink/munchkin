@@ -91,6 +91,16 @@ impl<'a> MinimisationContext<'a> {
             .get_predicates_for_literal(literal)
     }
 
+    #[allow(unused, reason = "will be used in the assignments")]
+    pub(crate) fn get_literal_for_predicate(&self, predicate: Predicate) -> Literal {
+        let integer_predicate: IntegerPredicate = predicate.try_into().unwrap();
+        self.variable_literal_mappings.get_literal(
+            integer_predicate,
+            self.assignments_propositional,
+            self.assignments_integer,
+        )
+    }
+
     /// Returns the reason for the provided `literal` in the form `l_1 /\ ... /\ l_n -> literal`
     #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn get_reason(&mut self, literal: Literal) -> Conjunction {
