@@ -69,6 +69,12 @@ impl<'a> MinimisationContext<'a> {
             .get_literal_assignment_level(literal)
     }
 
+    /// Returns the literal which is always true
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn get_always_true_literal(&self) -> Literal {
+        self.assignments_propositional.true_literal
+    }
+
     /// Returns whether the provided [`Literal`] was assigned at the root level
     #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn is_root_level_assignment(&self, literal: Literal) -> bool {
