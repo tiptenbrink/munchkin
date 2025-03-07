@@ -42,6 +42,13 @@ impl<'a> PropagationContext<'a> {
             use_non_generic_propagation_explanation,
         }
     }
+
+    /// Returns the assignment level of the provided literal
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn get_assignment_level_for_literal(&self, literal: Literal) -> usize {
+        self.assignments_propositional
+            .get_literal_assignment_level(literal)
+    }
 }
 
 #[derive(Debug)]
