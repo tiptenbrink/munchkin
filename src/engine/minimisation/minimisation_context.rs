@@ -87,6 +87,19 @@ impl<'a> MinimisationContext<'a> {
 
 /// Private helper methods
 impl MinimisationContext<'_> {
+    /// Returns whether the provided [`Literal`] was assigned at the root level
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn is_root_level_assignment(&self, literal: Literal) -> bool {
+        self.assignments_propositional
+            .is_literal_root_assignment(literal)
+    }
+
+    /// Returns whether the provided [`Literal`] was a decision
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn is_literal_decision(&self, literal: Literal) -> bool {
+        self.assignments_propositional.is_literal_decision(literal)
+    }
+
     /// Given a propagated literal, returns a clause reference of the clause that propagates the
     /// literal. In case the literal was propagated by a clause, the propagating clause is
     /// returned. Otherwise, the literal was propagated by a propagator, in which case a new

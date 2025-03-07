@@ -155,6 +155,12 @@ impl ConflictAnalysisContext<'_> {
             .is_literal_root_assignment(literal)
     }
 
+    /// Returns whether the provided [`Literal`] was a decision
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn is_literal_decision(&self, literal: Literal) -> bool {
+        self.assignments_propositional.is_literal_decision(literal)
+    }
+
     /// Returns the reason for the provided `literal` in the form `l_1 /\ ... /\ l_n -> literal`
     #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn get_reason(&mut self, literal: Literal) -> Conjunction {
