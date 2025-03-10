@@ -16,5 +16,5 @@ pub(crate) fn recompute_invariants(
     _context: PropagationContext,
     _learned_nogood: &mut LearnedNogood,
 ) {
-    todo!()
+    todo!("Implement this helper function to recompute the invariants of 'LearnedNogood'")
 }
