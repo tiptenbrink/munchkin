@@ -268,6 +268,12 @@ impl DebugHelper {
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) -> bool {
+        let name = propagators_cp[propagator_id.0 as usize].name();
+        if name == "LinearLeq" || name == "Reified(LinearLeq)" {
+            // We do not check the explanations of the linear less than or equal propagator or
+            // reified linear less than or equals for efficiency
+            return true;
+        }
         let mut result = true;
         for trail_index in num_trail_entries_before..assignments.num_trail_entries() {
             let trail_entry = assignments.get_trail_entry(trail_index);
