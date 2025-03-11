@@ -192,7 +192,7 @@ def run():
         for model in MODELS:
             for propagators in MODEL_TO_PROPAGATORS[model]:
                 print(f"Evaluating {minimisation} with {model} - {propagators}")
-                total_grade += grade_minimisation(minimisation, ", ".join(propagators), model)
+                total_grade += grade_minimisation(minimisation, propagators, model)
 
     print(f"Grade = {total_grade}% / {max_grade}%")
 
