@@ -8,6 +8,7 @@ use crate::basic_types::StoredConflictInfo;
 use crate::branching::Brancher;
 use crate::engine::constraint_satisfaction_solver::CSPSolverState;
 use crate::engine::constraint_satisfaction_solver::Counters;
+use crate::engine::cp::propagation::propagation_context::HasAssignments;
 use crate::engine::cp::propagation::PropagationContext;
 use crate::engine::cp::reason::ReasonRef;
 use crate::engine::cp::reason::ReasonStore;
@@ -198,6 +199,16 @@ impl ConflictAnalysisContext<'_> {
     #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn get_num_trail_entries(&self) -> usize {
         self.assignments_propositional.num_trail_entries()
+    }
+}
+
+impl HasAssignments for ConflictAnalysisContext<'_> {
+    fn assignments_integer(&self) -> &AssignmentsInteger {
+        self.assignments_integer
+    }
+
+    fn assignments_propositional(&self) -> &AssignmentsPropositional {
+        self.assignments_propositional
     }
 }
 

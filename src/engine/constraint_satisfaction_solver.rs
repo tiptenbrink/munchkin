@@ -952,7 +952,7 @@ impl ConstraintSatisfactionSolver {
             NogoodMinimisationStrategy::NoMinimisation,
         ) {
             recompute_invariants(
-                PropagationContext::new(
+                &PropagationContext::new(
                     &self.assignments_integer,
                     &self.assignments_propositional,
                     self.internal_parameters
