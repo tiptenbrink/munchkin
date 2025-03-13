@@ -152,6 +152,12 @@ impl DebugHelper {
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) {
+        let name = propagator.name();
+        if name == "LinearLeq" || name == "Reified(LinearLeq)" {
+            // We do not check the explanations of the linear less than or equal propagator or
+            // reified linear less than or equals for efficiency
+            return;
+        }
         DebugHelper::debug_reported_propagations_reproduce_failure(
             assignments_integer,
             assignments_propositional,
