@@ -285,19 +285,26 @@ impl ConflictAnalysisContext<'_> {
                 //  todo better ways
                 let explanation_literals: Vec<Literal> = conjunction
                     .iter()
-                    .map(|&predicate| match predicate {
-                        Predicate::IntegerPredicate(integer_predicate) => {
-                            !self.variable_literal_mappings.get_literal(
-                                integer_predicate,
-                                self.assignments_propositional,
-                                self.assignments_integer,
-                            )
-                        }
-                        bool_predicate => !bool_predicate
-                            .get_literal_of_bool_predicate(
-                                self.assignments_propositional.true_literal,
-                            )
-                            .unwrap(),
+                    .map(|&predicate| {
+                        let literal = match predicate {
+                                            Predicate::IntegerPredicate(integer_predicate) => {
+                                                !self.variable_literal_mappings.get_literal(
+                                                    integer_predicate,
+                                                    self.assignments_propositional,
+                                                    self.assignments_integer,
+                                                )
+                                            }
+                                            bool_predicate => !bool_predicate
+                                                .get_literal_of_bool_predicate(
+                                                    self.assignments_propositional.true_literal,
+                                                )
+                                                .unwrap(),
+                                        };
+                        assert!(
+                            self.assignments_propositional.is_literal_assigned(literal),
+                            "One of the literals in the reported conflict is not assigned; please check your conflict explanations"
+                        );
+                        literal
                     })
                     .collect();
 
@@ -336,7 +343,7 @@ impl ConflictAnalysisContext<'_> {
         // important to keep propagated literal at the zero-th position
         let explanation_literals: Vec<Literal> = std::iter::once(propagated_literal)
             .chain(reason.iter().map(|&predicate| {
-                match predicate {
+                let literal = match predicate {
                     Predicate::IntegerPredicate(integer_predicate) => {
                         !self.variable_literal_mappings.get_literal(
                             integer_predicate,
@@ -347,7 +354,12 @@ impl ConflictAnalysisContext<'_> {
                     bool_predicate => !bool_predicate
                         .get_literal_of_bool_predicate(self.assignments_propositional.true_literal)
                         .unwrap(),
-                }
+                };
+                assert!(
+                    self.assignments_propositional.is_literal_assigned(literal),
+                    "All literals in the reason of a propagation should be true; please check your propagation explanations"
+                );
+                literal
             }))
             .collect();
 
