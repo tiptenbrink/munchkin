@@ -28,6 +28,7 @@ use crate::engine::variables::DomainId;
 use crate::engine::variables::IntegerVariable;
 use crate::engine::variables::Literal;
 use crate::munchkin_assert_simple;
+use crate::termination::Indefinite;
 use crate::ConstraintOperationError;
 
 /// A container for CP variables, which can be used to test propagators.
@@ -283,6 +284,7 @@ impl TestSolver {
 
         assert!(
             DebugHelper::debug_check_propagations(
+                &mut Indefinite,
                 num_trail_entries_before,
                 propagator,
                 &self.assignments_integer,

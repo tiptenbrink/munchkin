@@ -1217,7 +1217,7 @@ impl ConstraintSatisfactionSolver {
     /// complex ones.
     fn propagate_cp_one_step(
         &mut self,
-        termination: &mut impl TerminationCondition,
+        _termination: &mut impl TerminationCondition,
     ) -> PropagationStatusOneStepCP {
         if self.propagator_queue.is_empty() {
             return PropagationStatusOneStepCP::FixedPoint;
@@ -1273,7 +1273,7 @@ impl ConstraintSatisfactionSolver {
                 #[cfg(feature = "explanation-checks")]
                 assert!(
                     DebugHelper::debug_check_propagations(
-                        termination,
+                        _termination,
                         num_trail_entries_before,
                         propagator_id,
                         &self.assignments_integer,
