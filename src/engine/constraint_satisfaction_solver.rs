@@ -1155,7 +1155,7 @@ impl ConstraintSatisfactionSolver {
                 .expect("should not be an error");
 
             // ask propagators to propagate
-            let propagation_status_one_step_cp = self.propagate_cp_one_step();
+            let propagation_status_one_step_cp = self.propagate_cp_one_step(termination);
 
             match propagation_status_one_step_cp {
                 PropagationStatusOneStepCP::PropagationHappened(reported_empty_domain) => {
@@ -1215,7 +1215,10 @@ impl ConstraintSatisfactionSolver {
     /// domain change. The idea is to go to the clausal propagator first before proceeding with
     /// other propagators, in line with the idea of propagating simpler propagators before more
     /// complex ones.
-    fn propagate_cp_one_step(&mut self) -> PropagationStatusOneStepCP {
+    fn propagate_cp_one_step(
+        &mut self,
+        termination: &mut impl TerminationCondition,
+    ) -> PropagationStatusOneStepCP {
         if self.propagator_queue.is_empty() {
             return PropagationStatusOneStepCP::FixedPoint;
         }
@@ -1270,6 +1273,7 @@ impl ConstraintSatisfactionSolver {
                 #[cfg(feature = "explanation-checks")]
                 assert!(
                     DebugHelper::debug_check_propagations(
+                        termination,
                         num_trail_entries_before,
                         propagator_id,
                         &self.assignments_integer,
