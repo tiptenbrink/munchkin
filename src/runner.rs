@@ -4,9 +4,11 @@ use std::time::Duration;
 
 use clap::ValueEnum;
 
+use self::termination::TerminationCondition;
 use crate::branching::Brancher;
 use crate::engine::constraint_satisfaction_solver::ConflictResolutionStrategy;
 use crate::engine::constraint_satisfaction_solver::NogoodMinimisationStrategy;
+use crate::engine::termination;
 use crate::model::Globals;
 use crate::model::IntVariable;
 use crate::model::Model;
@@ -165,6 +167,7 @@ pub fn solve<SearchStrategies>(
     _proof_path: Option<PathBuf>,
     time_out: Duration,
 ) -> anyhow::Result<()> {
+    let mut time_budget = TimeBudget::starting_now(time_out);
     let (mut solver, solver_variables) = model.into_solver(
         SolverOptions {
             conflict_resolver: conflict_resolution,
@@ -174,7 +177,14 @@ pub fn solve<SearchStrategies>(
             ..Default::default()
         },
         |global| globals.contains(&global),
+        &mut time_budget,
     );
+
+    if time_budget.should_stop() {
+        solver.log_statistics();
+        println!("UNKNOWN");
+        return Ok(());
+    }
 
     let output_variables: Vec<_> = instance.get_output_variables().collect();
     let callback_solver_variables = solver_variables.clone();
@@ -188,7 +198,6 @@ pub fn solve<SearchStrategies>(
     });
 
     let mut brancher = instance.get_search(search_strategy, &solver, &solver_variables);
-    let mut time_budget = TimeBudget::starting_now(time_out);
     let objective_variable = solver_variables.to_solver_variable(instance.objective());
 
     match solver.minimise(&mut brancher, &mut time_budget, objective_variable) {
