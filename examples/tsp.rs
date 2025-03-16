@@ -125,10 +125,14 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
         variables: &VariableMap,
     ) -> impl Brancher + 'static {
         match strategy {
-            SearchStrategies::Default => IndependentVariableValueBrancher::new(
+            #[allow(
+                trivial_casts,
+                reason = "without it, the type-checker cannot infer that `dyn Brancher` impls `Brancher`"
+            )]
+            SearchStrategies::Default => Box::new(IndependentVariableValueBrancher::new(
                 InputOrder::new(variables.get_array(self.successors)),
                 InDomainMin,
-            ),
+            )) as Box<dyn Brancher>,
         }
     }
 
