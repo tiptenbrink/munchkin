@@ -1,6 +1,7 @@
 use super::MinimisationContext;
 use crate::engine::conflict_analysis::LearnedNogood;
-use crate::engine::cp::propagation::PropagationContext;
+use crate::engine::cp::propagation::propagation_context::HasAssignments;
+use crate::engine::cp::propagation::ReadDomains;
 
 /// A trait which determines the behaviour of minimisers
 pub(crate) trait Minimiser: Default {
@@ -12,9 +13,9 @@ pub(crate) trait Minimiser: Default {
 ///
 /// i.e. puts the literal of the current decision level at the `0`-th position and a literal from
 /// the backjump level at the `1`-st position.
-pub(crate) fn recompute_invariants(
-    _context: PropagationContext,
+pub(crate) fn recompute_invariants<Context: HasAssignments + ReadDomains>(
+    _context: &Context,
     _learned_nogood: &mut LearnedNogood,
 ) {
-    todo!()
+    todo!("Implement this helper function to recompute the invariants of 'LearnedNogood'")
 }

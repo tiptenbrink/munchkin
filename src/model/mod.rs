@@ -7,6 +7,7 @@ use crate::constraints;
 use crate::constraints::CumulativeImpl;
 use crate::constraints::SubCircuitElimination;
 use crate::options::SolverOptions;
+use crate::termination::TerminationCondition;
 use crate::variables::AffineView;
 use crate::variables::DomainId;
 use crate::variables::TransformableVariable;
@@ -79,6 +80,7 @@ impl Model {
         self,
         solver_options: SolverOptions,
         use_global_propagator: impl Fn(Globals) -> bool,
+        termination: &mut impl TerminationCondition,
     ) -> (Solver, VariableMap) {
         let mut solver = Solver::with_options(solver_options);
 
@@ -108,6 +110,7 @@ impl Model {
             &solver_variables,
             use_global_propagator,
             &mut solver,
+            termination,
         );
 
         (solver, solver_variables)
@@ -119,10 +122,14 @@ fn add_constraints(
     solver_variables: &VariableMap,
     use_global_propagator: impl Fn(Globals) -> bool,
     solver: &mut Solver,
+    termination: &mut impl TerminationCondition,
 ) -> Result<(), ConstraintOperationError> {
     let to_solver_variable = |int_var: IntVariable| solver_variables.to_solver_variable(int_var);
 
     for constraint in constraints {
+        if termination.should_stop() {
+            return Ok(());
+        }
         match constraint {
             Constraint::Circuit(variables) => {
                 let variables: Vec<_> = variables.into_iter().map(to_solver_variable).collect();

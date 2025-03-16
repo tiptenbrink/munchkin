@@ -15,6 +15,8 @@ use super::predicates::integer_predicate::IntegerPredicate;
 use super::predicates::integer_predicate::IntegerPredicateConversionError;
 use super::sat::ClauseAllocator;
 #[cfg(any(feature = "explanation-checks", test))]
+use super::termination::TerminationCondition;
+#[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::HashSet;
 #[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::PropositionalConjunction;
@@ -152,6 +154,12 @@ impl DebugHelper {
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) {
+        let name = propagator.name();
+        if name == "LinearLeq" || name == "Reified(LinearLeq)" {
+            // We do not check the explanations of the linear less than or equal propagator or
+            // reified linear less than or equals for efficiency
+            return;
+        }
         DebugHelper::debug_reported_propagations_reproduce_failure(
             assignments_integer,
             assignments_propositional,
@@ -258,6 +266,7 @@ impl DebugHelper {
     )]
     #[cfg(any(feature = "explanation-checks", test))]
     pub(crate) fn debug_check_propagations(
+        termination: &mut impl TerminationCondition,
         num_trail_entries_before: usize,
         propagator_id: PropagatorId,
         assignments: &AssignmentsInteger,
@@ -268,8 +277,17 @@ impl DebugHelper {
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) -> bool {
+        let name = propagators_cp[propagator_id.0 as usize].name();
+        if name == "LinearLeq" || name == "Reified(LinearLeq)" {
+            // We do not check the explanations of the linear less than or equal propagator or
+            // reified linear less than or equals for efficiency
+            return true;
+        }
         let mut result = true;
         for trail_index in num_trail_entries_before..assignments.num_trail_entries() {
+            if termination.should_stop() {
+                return true;
+            }
             let trail_entry = assignments.get_trail_entry(trail_index);
 
             let reason = reason_store

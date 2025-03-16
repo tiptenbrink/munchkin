@@ -952,7 +952,7 @@ impl ConstraintSatisfactionSolver {
             NogoodMinimisationStrategy::NoMinimisation,
         ) {
             recompute_invariants(
-                PropagationContext::new(
+                &PropagationContext::new(
                     &self.assignments_integer,
                     &self.assignments_propositional,
                     self.internal_parameters
@@ -982,6 +982,22 @@ impl ConstraintSatisfactionSolver {
         // We calculate some statistics and perform clause minimisation (before collecting the
         // statistics)
         if let Some(learned_nogood) = learned_nogood.as_mut() {
+            munchkin_assert_simple!(
+                learned_nogood.backjump_level < self.get_decision_level(),
+                "The backjump level of the learned nogood was not lower than the current decision level; this could indicate that you are not setting the backjump level correctly"
+            );
+            munchkin_assert_simple!(
+                learned_nogood.literals.is_empty() || self.assignments_propositional.get_literal_assignment_level(learned_nogood.literals[0]) == self.get_decision_level(),
+                "The literal at the 0-th position in the nogood should be of the current decision level; please see the documentation of 'LearnedNogood' for the invariants!"
+            );
+            munchkin_assert_simple!(
+                learned_nogood.literals.len() <= 1
+                    || self
+                        .assignments_propositional
+                        .get_literal_assignment_level(learned_nogood.literals[1])
+                        < self.get_decision_level(),
+                        "The literal at the 1-st position in the nogood should be of the next highest decision level; please see the documentation of 'LearnedNogood' for the invariants"
+            );
             self.minimise_learned_nogood(learned_nogood);
 
             self.counters
@@ -1139,7 +1155,7 @@ impl ConstraintSatisfactionSolver {
                 .expect("should not be an error");
 
             // ask propagators to propagate
-            let propagation_status_one_step_cp = self.propagate_cp_one_step();
+            let propagation_status_one_step_cp = self.propagate_cp_one_step(termination);
 
             match propagation_status_one_step_cp {
                 PropagationStatusOneStepCP::PropagationHappened(reported_empty_domain) => {
@@ -1199,7 +1215,10 @@ impl ConstraintSatisfactionSolver {
     /// domain change. The idea is to go to the clausal propagator first before proceeding with
     /// other propagators, in line with the idea of propagating simpler propagators before more
     /// complex ones.
-    fn propagate_cp_one_step(&mut self) -> PropagationStatusOneStepCP {
+    fn propagate_cp_one_step(
+        &mut self,
+        _termination: &mut impl TerminationCondition,
+    ) -> PropagationStatusOneStepCP {
         if self.propagator_queue.is_empty() {
             return PropagationStatusOneStepCP::FixedPoint;
         }
@@ -1254,6 +1273,7 @@ impl ConstraintSatisfactionSolver {
                 #[cfg(feature = "explanation-checks")]
                 assert!(
                     DebugHelper::debug_check_propagations(
+                        _termination,
                         num_trail_entries_before,
                         propagator_id,
                         &self.assignments_integer,
@@ -1482,10 +1502,6 @@ impl Counters {
         log_statistic("numberOfConflicts", self.num_conflicts);
         log_statistic("numberOfPropagations", self.num_propagations);
         log_statistic("timeSpentInSolverInMilliseconds", self.time_spent_in_solver);
-        log_statistic(
-            "averageBacktrackAmount",
-            self.average_backtrack_amount.value(),
-        );
 
         log_statistic(
             "averageSizeOfConflictExplanation",
@@ -1497,9 +1513,26 @@ impl Counters {
             self.average_learned_nogood_length.value(),
         );
         log_statistic(
+            "averageBacktrackAmount",
+            self.average_backtrack_amount.value(),
+        );
+        log_statistic(
             "averageLearnedNogoodLbd",
             self.average_learned_nogood_lbd.value(),
-        )
+        );
+
+        log_statistic(
+            "averageNumberOfLiteralsRemovedSemantic",
+            self.average_number_of_literals_removed_semantic.value(),
+        );
+        log_statistic(
+            "averageNumberOfLiteralsRemovedRecursive",
+            self.average_number_of_literals_removed_recursive.value(),
+        );
+        log_statistic(
+            "averageNumberOfLiteralsRemovedNogoodMinimisation",
+            self.average_number_of_literals_removed_minimisation.value(),
+        );
     }
 }
 
