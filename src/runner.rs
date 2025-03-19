@@ -249,7 +249,8 @@ pub fn solve<SearchStrategies>(
             let literal = solver.get_literal(predicate![objective_variable >= objective_bound]);
             solver.conclude_proof_optimal(literal);
 
-            println!("==========")
+            println!("==========");
+            solver.log_statistics();
         }
         OptimisationResult::Satisfiable(_) => {}
 
