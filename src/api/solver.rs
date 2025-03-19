@@ -1,3 +1,5 @@
+use std::num::NonZero;
+
 use super::results::OptimisationResult;
 use super::results::SatisfactionResult;
 use super::results::SatisfactionResultUnderAssumptions;
@@ -112,14 +114,22 @@ impl Solver {
             solution_callback: create_empty_function(),
         }
     }
-}
 
-impl Solver {
     pub fn with_options_and_conflict_resolver(solver_options: SolverOptions) -> Self {
         Solver {
             satisfaction_solver: ConstraintSatisfactionSolver::new(solver_options),
             solution_callback: create_empty_function(),
         }
+    }
+
+    /// Conclude the proof with the given bound on the objective variable.
+    pub(crate) fn conclude_proof_optimal(&mut self, bound: Literal) {
+        self.satisfaction_solver.conclude_proof_optimal(bound);
+    }
+
+    /// Conclude the proof with the unsat conclusion.
+    pub(crate) fn conclude_proof_unsat(&mut self) {
+        self.satisfaction_solver.conclude_proof_unsat();
     }
 
     /// Adds a call-back to the [`Solver`] which is called every time that a solution is found when
@@ -142,6 +152,11 @@ impl Solver {
     pub fn log_statistics(&self) {
         self.satisfaction_solver.log_statistics();
         log_statistic_postfix();
+    }
+
+    /// Unwrap into the underlying satisfaction solver for low-level API access.
+    pub(crate) fn into_satisfaction_solver(self) -> ConstraintSatisfactionSolver {
+        self.satisfaction_solver
     }
 }
 
@@ -661,7 +676,8 @@ impl Solver {
     pub(crate) fn add_propagator(
         &mut self,
         propagator: impl Propagator + 'static,
+        tag: NonZero<u32>,
     ) -> Result<(), ConstraintOperationError> {
-        self.satisfaction_solver.add_propagator(propagator)
+        self.satisfaction_solver.add_propagator(propagator, tag)
     }
 }

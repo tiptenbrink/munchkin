@@ -34,7 +34,7 @@ pub(crate) struct ConflictAnalysisContext<'a> {
     pub(crate) variable_literal_mappings: &'a VariableLiteralMappings,
     pub(crate) assignments_integer: &'a mut AssignmentsInteger,
     pub(crate) assignments_propositional: &'a mut AssignmentsPropositional,
-    pub(crate) internal_parameters: &'a SatisfactionSolverOptions,
+    pub(crate) internal_parameters: &'a mut SatisfactionSolverOptions,
     pub(crate) assumptions: &'a Vec<Literal>,
 
     pub(crate) solver_state: &'a mut CSPSolverState,
@@ -52,6 +52,15 @@ pub(crate) struct ConflictAnalysisContext<'a> {
 }
 
 impl ConflictAnalysisContext<'_> {
+    /// Log a learned nogood to the proof.
+    #[allow(unused, reason = "will be used in an assignment")]
+    pub(crate) fn log_learned_nogood(&mut self, nogood: &LearnedNogood) {
+        let _ = self
+            .internal_parameters
+            .proof
+            .log_nogood(nogood.literals.iter().copied(), []);
+    }
+
     /// Enqueue a decision literal as if it was a decision
     #[allow(unused, reason = "will be used in an assignment")]
     pub(crate) fn enqueue_decision_literal(&mut self, decision_literal: Literal) {

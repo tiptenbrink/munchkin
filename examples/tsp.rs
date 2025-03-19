@@ -83,7 +83,17 @@ impl Problem<SearchStrategies> for TravellingSalesperson {
             .enumerate()
             .for_each(|(node, successor)| {
                 // The costs of going from `node` to any of the other nodes.
-                let distances_from_node = slice_row(dist, node);
+                let distances_from_node = slice_row(dist, node)
+                    .into_iter()
+                    .enumerate()
+                    .map(|(idx, dist)| {
+                        model.new_interval_variable(
+                            format!("_Dist[{node}][{}]_eq_{dist}", idx + 1),
+                            dist,
+                            dist,
+                        )
+                    })
+                    .collect();
 
                 // Constrain the `outgoing_cost` to be the distance between `node` and its
                 // successor.

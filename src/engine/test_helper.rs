@@ -11,6 +11,7 @@ use super::sat::ClauseAllocator;
 use super::DebugHelper;
 use crate::basic_types::ConflictInfo;
 use crate::basic_types::Inconsistency;
+use crate::basic_types::KeyedVec;
 use crate::basic_types::PropagationStatusCP;
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::cp::propagation::PropagationContext;
@@ -44,7 +45,7 @@ pub(crate) struct TestSolver {
     pub(crate) clause_allocator: ClauseAllocator,
     next_id: u32,
 
-    propagators: Vec<Box<dyn Propagator>>,
+    propagators: KeyedVec<PropagatorId, Box<dyn Propagator>>,
 }
 
 impl Default for TestSolver {
@@ -194,15 +195,17 @@ impl TestSolver {
 
         let mut propagator: Box<dyn Propagator> = Box::new(propagator);
 
-        propagator.initialise_at_root(&mut PropagatorInitialisationContext::new(
-            &mut self.watch_list,
-            &mut self.watch_list_propositional,
-            id,
-            &self.assignments_integer,
-            &self.assignments_propositional,
-            true,
-            true,
-        ))?;
+        propagator
+            .initialise_at_root(&mut PropagatorInitialisationContext::new(
+                &mut self.watch_list,
+                &mut self.watch_list_propositional,
+                id,
+                &self.assignments_integer,
+                &self.assignments_propositional,
+                true,
+                true,
+            ))
+            .expect("do not detect conflicts in initialise at root");
 
         let num_trail_entries_before = self.assignments_integer.num_trail_entries();
 

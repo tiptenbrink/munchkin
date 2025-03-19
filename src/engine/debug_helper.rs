@@ -18,6 +18,7 @@ use super::sat::ClauseAllocator;
 use super::termination::TerminationCondition;
 #[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::HashSet;
+use crate::basic_types::KeyedVec;
 #[cfg(any(feature = "explanation-checks", test))]
 use crate::basic_types::PropositionalConjunction;
 use crate::engine::cp::propagation::PropagationContextMut;
@@ -64,7 +65,7 @@ impl DebugHelper {
         assignments_integer: &AssignmentsInteger,
         assignments_propositional: &AssignmentsPropositional,
         clause_allocator: &ClauseAllocator,
-        propagators_cp: &[Box<dyn Propagator>],
+        propagators_cp: &KeyedVec<PropagatorId, Box<dyn Propagator>>,
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) -> bool {
@@ -273,11 +274,11 @@ impl DebugHelper {
         assignments_propositional: &AssignmentsPropositional,
         variable_literal_mappings: &VariableLiteralMappings,
         reason_store: &mut ReasonStore,
-        propagators_cp: &[Box<dyn Propagator>],
+        propagators_cp: &KeyedVec<PropagatorId, Box<dyn Propagator>>,
         use_non_generic_conflict_explanation: bool,
         use_non_generic_propagation_explanation: bool,
     ) -> bool {
-        let name = propagators_cp[propagator_id.0 as usize].name();
+        let name = propagators_cp[propagator_id].name();
         if name == "LinearLeq" || name == "Reified(LinearLeq)" {
             // We do not check the explanations of the linear less than or equal propagator or
             // reified linear less than or equals for efficiency
@@ -314,7 +315,7 @@ impl DebugHelper {
                 assignments,
                 assignments_propositional,
                 variable_literal_mappings,
-                propagators_cp[propagator_id.0 as usize].as_ref(),
+                propagators_cp[propagator_id].as_ref(),
                 propagator_id,
                 use_non_generic_conflict_explanation,
                 use_non_generic_propagation_explanation,
