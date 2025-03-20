@@ -21,6 +21,7 @@ pub(crate) fn test_step_checker(
 ) {
     let mut state = CheckingState::from(model);
     let mut context = state.as_context();
+    context.set_proof_step_atomics(premises.iter().chain(&propagated).cloned());
 
     premises
         .iter()
