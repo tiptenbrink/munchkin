@@ -20,6 +20,8 @@ pub(super) fn verify(
     label: &str,
     mut context: CheckingContext,
 ) -> anyhow::Result<()> {
+    context.set_proof_step_atomics(premises.iter().chain(&propagated).cloned());
+
     // First we apply the premises and propagated atomics.
     premises
         .iter()
