@@ -3,6 +3,7 @@ use std::io::Write;
 use std::num::NonZero;
 use std::path::PathBuf;
 
+use drcp_format::reader::LiteralAtomicMap;
 use drcp_format::steps::StepId;
 use drcp_format::writer::LiteralCodeProvider;
 use drcp_format::writer::ProofWriter;
@@ -132,6 +133,8 @@ impl ProofImpl {
 pub(crate) struct ProofLiterals {
     /// All the variables seen in the proof log.
     variables: KeyedVec<PropositionalVariable, Option<NonZero<u32>>>,
+    /// The codes mapping to variables.
+    codes: KeyedVec<NonZero<u32>, Option<PropositionalVariable>>,
     /// The next code that can be used when a new variable is encountered.
     next_code: NonZero<u32>,
 }
@@ -140,6 +143,7 @@ impl Default for ProofLiterals {
     fn default() -> Self {
         ProofLiterals {
             variables: KeyedVec::default(),
+            codes: KeyedVec::default(),
             next_code: NonZero::new(1).unwrap(),
         }
     }
@@ -155,6 +159,7 @@ impl ProofLiterals {
         variable_literal_mapping: &VariableLiteralMappings,
     ) -> Self {
         let mut variables = KeyedVec::default();
+        let mut codes = KeyedVec::default();
         let next_code = definitions
             .iter()
             .map(|(id, _)| id)
@@ -181,11 +186,13 @@ impl ProofLiterals {
             assert!(literal.is_positive());
 
             variables.insert_with_default(literal.get_propositional_variable(), Some(code), None);
+            codes.insert_with_default(code, Some(literal.get_propositional_variable()), None);
         }
 
         ProofLiterals {
             variables,
             next_code,
+            codes,
         }
     }
 
@@ -324,6 +331,9 @@ impl LiteralCodeProvider for ProofLiterals {
             code
         };
 
+        self.codes
+            .insert_with_default(variable_code, Some(variable), None);
+
         let code: NonZero<i32> = variable_code
             .try_into()
             .expect("fewer than i32::MAX literals");
@@ -333,5 +343,17 @@ impl LiteralCodeProvider for ProofLiterals {
         } else {
             -code
         }
+    }
+}
+
+impl LiteralAtomicMap for ProofLiterals {
+    type Atomic = Literal;
+
+    fn to_atomic(&self, literal: NonZero<i32>) -> Self::Atomic {
+        let variable_code = literal.unsigned_abs();
+        let propositional_variable = self.codes[variable_code]
+            .expect("cannot obtain literal for code that was not part of proof");
+
+        Literal::new(propositional_variable, literal.is_positive())
     }
 }
