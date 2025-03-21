@@ -4,7 +4,7 @@ use std::num::NonZeroU64;
 
 pub type StepId = NonZeroU64;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Nogood<Literals, Hints> {
     pub id: StepId,
     pub literals: Literals,
@@ -29,7 +29,7 @@ pub enum Conclusion<Literal> {
 }
 
 /// One inference step in the proof.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Inference<'label, Premises, Propagated> {
     /// The ID of this step.
     pub id: StepId,
