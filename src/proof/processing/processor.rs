@@ -21,8 +21,21 @@ pub(crate) struct Processor {
 
 impl From<Model> for Processor {
     fn from(model: Model) -> Self {
-        let (solver, _) =
-            model.into_solver(SolverOptions::default(), |_| true, None, &mut Indefinite);
+        let (solver, _) = model.into_solver(
+            SolverOptions::default(),
+            |globals| match globals {
+                crate::model::Globals::DfsCircuit
+                | crate::model::Globals::EnergeticReasoningCumulative => false,
+                crate::model::Globals::Element
+                | crate::model::Globals::AllDifferent
+                | crate::model::Globals::Cumulative
+                | crate::model::Globals::Maximum
+                | crate::model::Globals::ForwardCheckingCircuit
+                | crate::model::Globals::TimeTableCumulative => true,
+            },
+            None,
+            &mut Indefinite,
+        );
 
         Processor {
             engine: RpEngine::new(solver),
