@@ -177,6 +177,7 @@ impl ProofLiterals {
 
             let representative = &definitions[0];
             let integer_predicate = atomic_to_integer_predicate(representative, variable_names);
+
             let literal = variable_literal_mapping.get_literal(
                 integer_predicate,
                 assignments_propositional,
@@ -210,8 +211,15 @@ impl ProofLiterals {
         let mut definitions = LiteralDefinitions::default();
 
         for (variable, code) in entries {
-            let predicates =
-                variable_literal_mapping.get_predicates_for_literal(Literal::new(variable, true));
+            let predicates = variable_literal_mapping
+                .get_predicates_for_literal(Literal::new(variable, true))
+                .map(|predicate| {
+                    if variable.get_index() == 0 {
+                        !predicate
+                    } else {
+                        predicate
+                    }
+                });
 
             let atomics =
                 predicates.map(|predicate| integer_predicate_to_atomic(predicate, variable_names));
