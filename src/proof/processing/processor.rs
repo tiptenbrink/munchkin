@@ -17,6 +17,7 @@ use crate::variables::Literal;
 pub(crate) struct Processor {
     engine: RpEngine,
     handles: HashMap<RpClauseHandle, StepId>,
+    bound: Option<Literal>,
 }
 
 impl From<Model> for Processor {
@@ -40,12 +41,18 @@ impl From<Model> for Processor {
         Processor {
             engine: RpEngine::new(solver),
             handles: HashMap::default(),
+            bound: None,
         }
     }
 }
 
 #[allow(dead_code, reason = "will be used in assignment")]
 impl Processor {
+    /// Sets up the processor to take the objective into account.
+    pub(crate) fn set_objective_bound(&mut self, bound: Literal) {
+        self.bound = Some(!bound);
+    }
+
     /// Adds a nogood to the propagation engine. This nogood will be used in
     /// [`Processor::propagate_under_assumptions`]. It can be removed through
     /// [`Processor::remove_nogood`].
@@ -64,6 +71,8 @@ impl Processor {
 
         let _ = self.handles.insert(handle, nogood.id);
 
+        self.propagate_under_assumptions(self.bound)?;
+
         Ok(())
     }
 
@@ -81,7 +90,7 @@ impl Processor {
         assumptions: impl IntoIterator<Item = Literal>,
     ) -> Result<(), ProcessorConflict> {
         self.engine
-            .propagate_under_assumptions(assumptions)
+            .propagate_under_assumptions(self.bound.iter().copied().chain(assumptions))
             .map_err(|reasons| self.map_reasons(reasons))
     }
 
