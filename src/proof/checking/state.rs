@@ -128,7 +128,7 @@ impl CheckingContext<'_> {
     }
 
     /// Test whether the given variable is part of the left-hand side of the proof step implication.
-    pub(crate) fn is_part_of_proof_step(&self, variable: IntVariable) -> bool {
+    pub(crate) fn is_part_of_proof_step_left_hand_side(&self, variable: IntVariable) -> bool {
         self.variables_in_step
             .iter()
             .any(|atomic| self.model.get_name(variable) == atomic.name)
@@ -334,10 +334,10 @@ mod tests {
 
         let mut state = CheckingState::from(model);
         let mut context = state.as_context();
-        context.set_proof_step_atomics([atomic("x", GreaterThanEqual, 3)]);
+        context.set_proof_step_premises([atomic("x", GreaterThanEqual, 3)]);
 
-        assert!(context.is_part_of_proof_step(x));
-        assert!(!context.is_part_of_proof_step(y));
+        assert!(context.is_part_of_proof_step_left_hand_side(x));
+        assert!(!context.is_proof_step_conclusion(y));
     }
 
     #[test]
