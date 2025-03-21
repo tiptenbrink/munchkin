@@ -52,6 +52,7 @@ impl CheckingState {
             nogoods: &self.nogoods,
             inferences: &self.inferences,
             variables_in_step: vec![],
+            proof_step_conclusion: None,
         }
     }
 
@@ -111,20 +112,34 @@ pub(crate) struct CheckingContext<'a> {
     nogoods: &'a BTreeMap<StepId, Vec<Atomic>>,
     inferences: &'a BTreeMap<StepId, (Vec<Atomic>, Option<Atomic>)>,
     variables_in_step: Vec<Atomic>,
+    proof_step_conclusion: Option<Atomic>,
 }
 
 #[allow(unused, reason = "will be used in the assignment")]
 impl CheckingContext<'_> {
     /// Set the variables that are involved in the proof step being checked.
-    pub(crate) fn set_proof_step_atomics(&mut self, variables: impl IntoIterator<Item = Atomic>) {
+    pub(crate) fn set_proof_step_premises(&mut self, variables: impl IntoIterator<Item = Atomic>) {
         self.variables_in_step.extend(variables);
     }
 
-    /// Test whether the given variable is part of the proof step.
+    /// Set the variables that are involved in the proof step being checked.
+    pub(crate) fn set_proof_step_conclusion(&mut self, atomic: Atomic) {
+        self.proof_step_conclusion = Some(atomic);
+    }
+
+    /// Test whether the given variable is part of the left-hand side of the proof step implication.
     pub(crate) fn is_part_of_proof_step(&self, variable: IntVariable) -> bool {
         self.variables_in_step
             .iter()
             .any(|atomic| self.model.get_name(variable) == atomic.name)
+    }
+
+    /// Test whether the given variable is the conclusion of the proof step implication.
+    pub(crate) fn is_proof_step_conclusion(&self, variable: IntVariable) -> bool {
+        self.proof_step_conclusion
+            .as_ref()
+            .map(|atomic| self.model.get_name(variable) == atomic.name)
+            .unwrap_or_default()
     }
 
     /// Apply the given atomic to the context.
