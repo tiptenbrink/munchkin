@@ -146,6 +146,7 @@ impl Processor {
     }
 }
 
+#[derive(Clone, Debug)]
 pub(crate) struct ProcessorConflict(Vec<Propagation>);
 
 impl IntoIterator for ProcessorConflict {
