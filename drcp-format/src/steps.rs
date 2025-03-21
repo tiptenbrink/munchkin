@@ -45,7 +45,7 @@ pub struct Inference<'label, Premises, Propagated> {
     pub propagated: Option<Propagated>,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Step<'a, Literals, Literal, Hints> {
     Inference(Inference<'a, Literals, Literal>),
     Nogood(Nogood<Literals, Hints>),
