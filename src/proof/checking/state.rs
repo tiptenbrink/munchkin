@@ -100,6 +100,12 @@ impl CheckingState {
             None => Ok(()),
         }
     }
+
+    pub(crate) fn set_objective_bound(&mut self, atomic: Atomic) -> anyhow::Result<()> {
+        let predicate = to_integer_predicate(&self.variable_map, &atomic)?;
+        self.assignment.apply_integer_predicate(!predicate, None)?;
+        Ok(())
+    }
 }
 
 /// A snapshot of the checking state. Step checkers can modify the domains of variables through
