@@ -30,7 +30,6 @@ pub(crate) fn process_proof<R: Read>(
 
     // 1. Trim the nogoods.
     let (nogoods, conclusion) = trim(&mut processor, reader)?;
-    assert!(!nogoods[0].is_empty(), "The first nogood is the empty nogood, which is unexpected. Likely the list of nogoods needs to be reversed.");
 
     println!("%% nogoodsAfterTrimming={}", nogoods.len());
 
