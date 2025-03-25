@@ -212,6 +212,7 @@ impl RpEngine {
     fn backtrack_one_level(&mut self) {
         self.solver
             .backtrack(self.solver.get_decision_level() - 1, &mut DummyBrancher);
+        self.solver.state.declare_solving();
     }
 
     fn enqueue_and_propagate(
