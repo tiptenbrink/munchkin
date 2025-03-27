@@ -1589,10 +1589,6 @@ pub(crate) struct CSPSolverState {
 }
 
 impl CSPSolverState {
-    pub(crate) fn is_ready(&self) -> bool {
-        matches!(self.internal_state, CSPSolverStateInternal::Ready)
-    }
-
     pub(crate) fn no_conflict(&self) -> bool {
         !self.conflicting()
     }

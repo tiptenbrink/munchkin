@@ -543,9 +543,9 @@ mod tests {
         let proof_c1 = [solver.get_literal(predicate![queens[0] == 0])];
         let mut checker = RpEngine::new(solver);
 
-        let Err(conflict) = checker.propagate_under_assumptions(proof_c1) else {
+        if checker.propagate_under_assumptions(proof_c1).is_ok() {
             panic!("expected propagation to detect conflict")
-        };
+        }
     }
 
     #[test]
@@ -561,9 +561,9 @@ mod tests {
         let mut checker = RpEngine::new(solver);
         let _ = checker.add_rp_clause(proof_c1);
 
-        let Err((_, conflict)) = checker.add_rp_clause(proof_c2) else {
+        if checker.add_rp_clause(proof_c2).is_ok() {
             panic!("expected propagation to detect conflict")
-        };
+        }
     }
 
     fn create_3queens() -> (Solver, Vec<DomainId>) {
