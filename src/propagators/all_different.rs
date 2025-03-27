@@ -26,13 +26,33 @@ impl<Var: IntegerVariable + 'static> Propagator for AllDifferentPropagator<Var> 
     }
 
     fn propagate(&self, mut context: PropagationContextMut) -> PropagationStatusCP {
-        todo!()
+        for (idx1, variable) in self.variables.iter().enumerate() {
+            let value = if context.is_fixed(variable) {
+                context.lower_bound(variable)
+            } else {
+                continue;
+            };
+
+            for (idx2, other) in self.variables.iter().enumerate() {
+                if idx1 == idx2 {
+                    continue;
+                }
+
+                context.remove(other, value, conjunction!([variable == value]))?;
+            }
+        }
+
+        Ok(())
     }
 
     fn initialise_at_root(
         &mut self,
         context: &mut PropagatorInitialisationContext,
     ) -> Result<(), PropositionalConjunction> {
-        todo!()
+        for variable in self.variables.iter() {
+            context.register(variable.clone(), DomainEvents::ASSIGN);
+        }
+
+        Ok(())
     }
 }
