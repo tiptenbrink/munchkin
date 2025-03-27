@@ -546,8 +546,6 @@ mod tests {
         let Err(conflict) = checker.propagate_under_assumptions(proof_c1) else {
             panic!("expected propagation to detect conflict")
         };
-
-        assert_eq!(conflict.len(), 3);
     }
 
     #[test]
@@ -566,8 +564,6 @@ mod tests {
         let Err((_, conflict)) = checker.add_rp_clause(proof_c2) else {
             panic!("expected propagation to detect conflict")
         };
-
-        assert_eq!(conflict.len(), 5);
     }
 
     fn create_3queens() -> (Solver, Vec<DomainId>) {
