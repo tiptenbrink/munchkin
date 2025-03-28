@@ -145,6 +145,9 @@ fn test_inference_introduction() {
 }
 
 fn assert_superset(proof: &str, expected: &str) {
+    let proof = proof.trim();
+    let expected = expected.trim();
+
     let type_proof = expected.chars().next().unwrap();
     let type_expected = expected.chars().next().unwrap();
     assert!(type_proof == type_expected);
@@ -158,6 +161,7 @@ fn assert_superset(proof: &str, expected: &str) {
         .next()
         .unwrap()
         .split(" ")
+        .filter(|element| !element.trim().is_empty())
         .map(|element| {
             element
                 .parse::<i32>()
@@ -168,6 +172,7 @@ fn assert_superset(proof: &str, expected: &str) {
         .next()
         .unwrap()
         .split(" ")
+        .filter(|element| !element.trim().is_empty())
         .map(|element| {
             element
                 .parse::<i32>()
@@ -185,6 +190,7 @@ fn assert_superset(proof: &str, expected: &str) {
         (Some(proof_rhs), Some(expected_rhs)) => {
             let proof_rhs = proof_rhs
                 .split(" ")
+                .filter(|element| !element.trim().is_empty())
                 .map(|element| {
                     element
                         .parse::<i32>()
@@ -193,6 +199,7 @@ fn assert_superset(proof: &str, expected: &str) {
                 .collect::<Vec<_>>();
             let expected_rhs = expected_rhs
                 .split(" ")
+                .filter(|element| !element.trim().is_empty())
                 .map(|element| {
                     element
                         .parse::<i32>()
