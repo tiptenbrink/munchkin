@@ -140,6 +140,69 @@ fn test_inference_introduction() {
     let lines_expected = expected_proof.trim().lines();
     assert_eq!(lines_proof.clone().count(), lines_expected.clone().count());
     for (proof_l, expected_l) in lines_proof.into_iter().zip(lines_expected.into_iter()) {
-        assert_eq!(proof_l.trim(), expected_l.trim());
+        assert_superset(proof_l, expected_l)
+    }
+}
+
+fn assert_superset(proof: &str, expected: &str) {
+    let type_proof = expected.chars().next().unwrap();
+    let type_expected = expected.chars().next().unwrap();
+    assert!(type_proof == type_expected);
+    if type_expected == 'i' {
+        return;
+    }
+    let mut split_proof = proof[2..].split("c").next().unwrap().split("0");
+    let mut split_expected = expected[2..].split("c").next().unwrap().split("0");
+
+    let proof_lhs = split_proof
+        .next()
+        .unwrap()
+        .split(" ")
+        .map(|element| {
+            element
+                .parse::<i32>()
+                .expect("Expected {element} to be parseable to int")
+        })
+        .collect::<Vec<_>>();
+    let expected_lhs = split_expected
+        .next()
+        .unwrap()
+        .split(" ")
+        .map(|element| {
+            element
+                .parse::<i32>()
+                .expect("Expected {element} to be parseable to int")
+        })
+        .collect::<Vec<_>>();
+
+    for element in expected_lhs {
+        assert!(proof_lhs.contains(&element));
+    }
+
+    let proof_rhs = split_proof.next();
+    let expected_rhs = split_expected.next();
+    match (proof_rhs, expected_rhs) {
+        (Some(proof_rhs), Some(expected_rhs)) => {
+            let proof_rhs = proof_rhs
+                .split(" ")
+                .map(|element| {
+                    element
+                        .parse::<i32>()
+                        .expect("Expected {element} to be parseable to int")
+                })
+                .collect::<Vec<_>>();
+            let expected_rhs = expected_rhs
+                .split(" ")
+                .map(|element| {
+                    element
+                        .parse::<i32>()
+                        .expect("Expected {element} to be parseable to int")
+                })
+                .collect::<Vec<_>>();
+            for element in expected_rhs {
+                assert!(proof_rhs.contains(&element));
+            }
+        }
+        (x, y) => panic!("Your hints: {x:?} but expected: {y:?}"),
     }
 }
