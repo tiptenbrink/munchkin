@@ -57,7 +57,10 @@ impl VariableLiteralMappings {
             clausal_propagator,
             assignments_propositional,
         );
-        self.add_predicate_information_to_propositional_variable(variable, predicate);
+        self.add_predicate_information_to_propositional_variable(
+            Literal::new(variable, true),
+            predicate,
+        );
         variable
     }
 
@@ -197,8 +200,8 @@ impl VariableLiteralMappings {
         // Because the predicates are attached to propositional variables (which we treat as true
         // literals), we have to be mindful of the polarity of the predicate.
         self.add_predicate_information_to_propositional_variable(
-            lower_bound_literals[1].get_propositional_variable(),
-            predicate![domain_id != lower_bound].try_into().unwrap(),
+            equality_literals[0],
+            predicate![domain_id == lower_bound].try_into().unwrap(),
         );
 
         for value in (lower_bound + 1)..upper_bound {
@@ -221,7 +224,7 @@ impl VariableLiteralMappings {
             let equals_ub = lower_bound_literals[lower_bound_literals.len() - 2];
             equality_literals.push(equals_ub);
             self.add_predicate_information_to_propositional_variable(
-                equals_ub.get_propositional_variable(),
+                equals_ub,
                 predicate![domain_id == upper_bound].try_into().unwrap(),
             );
         }
@@ -282,6 +285,10 @@ impl VariableLiteralMappings {
 
         // The integer variable will always be at least the lower bound of the initial domain.
         lower_bound_literals.push(assignments_propositional.true_literal);
+        self.add_predicate_information_to_propositional_variable(
+            lower_bound_literals[0],
+            predicate![domain_id >= lower_bound].try_into().unwrap(),
+        );
 
         for value in (lower_bound + 1)..=upper_bound {
             let propositional_variable = self.create_new_propositional_variable_with_predicate(
@@ -296,6 +303,10 @@ impl VariableLiteralMappings {
 
         // The integer variable is never bigger than the upper bound of the initial domain.
         lower_bound_literals.push(assignments_propositional.false_literal);
+        self.add_predicate_information_to_propositional_variable(
+            lower_bound_literals.last().copied().unwrap(),
+            predicate![domain_id >= upper_bound + 1].try_into().unwrap(),
+        );
 
         munchkin_assert_eq_simple!(
             lower_bound_literals.len(),
@@ -322,49 +333,19 @@ impl VariableLiteralMappings {
 
     fn add_predicate_information_to_propositional_variable(
         &mut self,
-        variable: PropositionalVariable,
+        literal: Literal,
         predicate: IntegerPredicate,
     ) {
         munchkin_assert_simple!(
-            !self.literal_to_predicates[Literal::new(variable, false)].contains(&predicate),
+            !self.literal_to_predicates[!literal].contains(&predicate),
             "The predicate is already attached to the _negative_ literal, cannot do this twice."
         );
 
-        // create a closure for convenience that adds predicates to literals
-        let closure_add_predicate_to_literal = |literal: Literal,
-                                                predicate: IntegerPredicate,
-                                                mapping_literal_to_predicates: &mut KeyedVec<
-            Literal,
-            Vec<IntegerPredicate>,
-        >| {
-            munchkin_assert_simple!(
-                !mapping_literal_to_predicates[literal].contains(&predicate),
-                "The predicate is already attached to the literal, cannot do this twice."
-            );
-            // resize the mapping vector if necessary
-            if literal.to_u32() as usize >= mapping_literal_to_predicates.len() {
-                mapping_literal_to_predicates.resize((literal.to_u32() + 1) as usize, Vec::new());
-            }
-            // append the predicate - note that the assert makes sure the same predicate is
-            // never added twice
-            mapping_literal_to_predicates[literal].push(predicate);
-        };
+        self.literal_to_predicates.accomodate(literal, vec![]);
+        self.literal_to_predicates.accomodate(!literal, vec![]);
 
-        // now use the closure to add the predicate to both the positive and negative literals
-
-        let positive_literal = Literal::new(variable, true);
-        closure_add_predicate_to_literal(
-            positive_literal,
-            predicate,
-            &mut self.literal_to_predicates,
-        );
-
-        let negative_literal = Literal::new(variable, false);
-        closure_add_predicate_to_literal(
-            negative_literal,
-            !predicate,
-            &mut self.literal_to_predicates,
-        );
+        self.literal_to_predicates[literal].push(predicate);
+        self.literal_to_predicates[!literal].push(!predicate);
     }
 }
 
