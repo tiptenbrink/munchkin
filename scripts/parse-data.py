@@ -58,7 +58,7 @@ def parse_stats_from_str(log: str) -> dict[str, int]:
         line = line.removeprefix("%% ").strip()
 
         stat_name, value = line.split('=')
-        stats[stat_name] = int(value)
+        stats[stat_name] = float(value)
 
     return stats
 
